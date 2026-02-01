@@ -1,0 +1,6 @@
+/Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles/deeplearn.dir
+/Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles/edit_cache.dir
+/Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles/rebuild_cache.dir
+/Users/sujith/Desktop/IITB/assignment_github_folder/build/tests/CMakeFiles/test_tensor.dir
+/Users/sujith/Desktop/IITB/assignment_github_folder/build/tests/CMakeFiles/edit_cache.dir
+/Users/sujith/Desktop/IITB/assignment_github_folder/build/tests/CMakeFiles/rebuild_cache.dir

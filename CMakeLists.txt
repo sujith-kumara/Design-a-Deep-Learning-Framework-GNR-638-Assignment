@@ -11,6 +11,6 @@ add_library(deeplearn
     framework/src/tensor.cpp
 )
 
-# Placeholders for other subdirectories
-# add_subdirectory(tests)
+# Subdirectories
+add_subdirectory(tests)
 # add_subdirectory(bindings)

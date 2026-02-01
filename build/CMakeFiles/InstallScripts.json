@@ -1,0 +1,8 @@
+{
+	"InstallScripts" : 
+	[
+		"/Users/sujith/Desktop/IITB/assignment_github_folder/build/cmake_install.cmake",
+		"/Users/sujith/Desktop/IITB/assignment_github_folder/build/tests/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
