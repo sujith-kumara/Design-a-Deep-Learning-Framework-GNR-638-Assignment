@@ -5,10 +5,10 @@
 
 namespace dl {
 
-Tensor::Tensor() : grad(nullptr), requires_grad(false) {}
+Tensor::Tensor() : grad(nullptr), requires_grad(false), op_type("") {}
 
 Tensor::Tensor(const std::vector<int> &shape)
-    : _shape(shape), grad(nullptr), requires_grad(false) {
+    : _shape(shape), grad(nullptr), requires_grad(false), op_type("") {
   size_t total_size = numel();
   _data.assign(total_size, 0.0f);
 }
@@ -82,6 +82,12 @@ Tensor Tensor::add(const Tensor &other) const {
   Tensor res(_shape);
   for (size_t i = 0; i < _data.size(); ++i)
     res._data[i] = _data[i] + other._data[i];
+
+  if (this->requires_grad || other.requires_grad) {
+    res.requires_grad = true;
+    res.op_type = "add";
+    res.parents = {(Tensor *)this, (Tensor *)&other};
+  }
   return res;
 }
 
@@ -91,6 +97,12 @@ Tensor Tensor::sub(const Tensor &other) const {
   Tensor res(_shape);
   for (size_t i = 0; i < _data.size(); ++i)
     res._data[i] = _data[i] - other._data[i];
+
+  if (this->requires_grad || other.requires_grad) {
+    res.requires_grad = true;
+    res.op_type = "sub";
+    res.parents = {(Tensor *)this, (Tensor *)&other};
+  }
   return res;
 }
 
@@ -100,6 +112,12 @@ Tensor Tensor::mul(const Tensor &other) const {
   Tensor res(_shape);
   for (size_t i = 0; i < _data.size(); ++i)
     res._data[i] = _data[i] * other._data[i];
+
+  if (this->requires_grad || other.requires_grad) {
+    res.requires_grad = true;
+    res.op_type = "mul";
+    res.parents = {(Tensor *)this, (Tensor *)&other};
+  }
   return res;
 }
 
@@ -122,6 +140,12 @@ Tensor Tensor::matmul(const Tensor &other) const {
       }
       res({i, j}) = sum;
     }
+  }
+
+  if (this->requires_grad || other.requires_grad) {
+    res.requires_grad = true;
+    res.op_type = "matmul";
+    res.parents = {(Tensor *)this, (Tensor *)&other};
   }
   return res;
 }
@@ -169,6 +193,12 @@ Tensor Tensor::conv2d(const Tensor &kernel, int stride, int padding) const {
       }
     }
   }
+
+  if (this->requires_grad || kernel.requires_grad) {
+    res.requires_grad = true;
+    res.op_type = "conv2d";
+    res.parents = {(Tensor *)this, (Tensor *)&kernel};
+  }
   return res;
 }
 
@@ -202,6 +232,12 @@ Tensor Tensor::maxpool2d(int kernel_size, int stride) const {
         }
       }
     }
+  }
+
+  if (this->requires_grad) {
+    res.requires_grad = true;
+    res.op_type = "maxpool2d";
+    res.parents = {(Tensor *)this};
   }
   return res;
 }

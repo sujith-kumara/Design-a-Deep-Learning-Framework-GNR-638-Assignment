@@ -55,6 +55,17 @@ int main() {
   assert(pool_out({0, 0, 0, 0}) == 1.0f);
   std::cout << "Maxpool2d test passed." << std::endl;
 
+  // 5. Graph metadata
+  a.requires_grad = true;
+  b.requires_grad = true;
+  dl::Tensor e = a.add(b);
+  assert(e.requires_grad == true);
+  assert(e.op_type == "add");
+  assert(e.parents.size() == 2);
+  assert(e.parents[0] == &a);
+  assert(e.parents[1] == &b);
+  std::cout << "Graph metadata test (add) passed." << std::endl;
+
   std::cout << "All basic Tensor tests passed!" << std::endl;
   return 0;
 }

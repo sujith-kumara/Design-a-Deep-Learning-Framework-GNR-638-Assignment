@@ -1,6 +1,5 @@
-#pragma once
-
 #include <iostream>
+#include <string>
 #include <vector>
 
 namespace dl {
@@ -10,6 +9,8 @@ public:
   Tensor();
   explicit Tensor(const std::vector<int> &shape);
   ~Tensor();
+
+  // ... (rest of the class)
 
   // Helper methods
   const std::vector<int> &size() const { return _shape; }
@@ -32,9 +33,11 @@ public:
   float &operator()(const std::vector<int> &indices);
   float operator()(const std::vector<int> &indices) const;
 
-  // Autograd-ready members (no logic yet)
+  // Autograd-ready members
   bool requires_grad{false};
   Tensor *grad{nullptr};
+  std::vector<Tensor *> parents;
+  std::string op_type{""};
 
 private:
   std::vector<float> _data;
