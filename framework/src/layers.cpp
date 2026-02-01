@@ -52,8 +52,35 @@ Tensor Conv2D::forward(const Tensor &input) {
   // broadcasting.
 
   return _conv_out.add(b);
-  // Note: if add doesn't broadcast, this will fail.
-  // I will update Tensor::add to support basic broadcasting for bias.
+}
+
+Linear::Linear(int in_features, int out_features) {
+  // Initialize weights: (out_features, in_features)
+  std::vector<int> w_shape = {out_features, in_features};
+  size_t w_size = (size_t)out_features * in_features;
+
+  std::vector<float> w_data(w_size);
+  std::mt19937 gen(42);
+  std::uniform_real_distribution<float> dist(-0.1f, 0.1f);
+  for (size_t i = 0; i < w_size; ++i) {
+    w_data[i] = dist(gen);
+  }
+  W = Tensor(w_shape, w_data);
+  W.requires_grad = true;
+
+  // Initialize bias: (1, out_features)
+  std::vector<int> b_shape = {1, out_features};
+  std::vector<float> b_data(out_features, 0.0f);
+  b = Tensor(b_shape, b_data);
+  b.requires_grad = true;
+}
+
+Tensor Linear::forward(const Tensor &input) {
+  // input: (Batch, in_features), W: (out_features, in_features)
+  // forward = input @ W.T + b
+  _w_transpose = W.transpose();
+  _matmul_out = input.matmul(_w_transpose);
+  return _matmul_out.add(b);
 }
 
 } // namespace dl

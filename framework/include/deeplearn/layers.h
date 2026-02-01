@@ -24,4 +24,17 @@ private:
   Tensor _conv_out; // Store intermediate to keep it alive for autograd
 };
 
+class Linear : public Layer {
+public:
+  Linear(int in_features, int out_features);
+  Tensor forward(const Tensor &input);
+
+  Tensor W;
+  Tensor b;
+
+private:
+  Tensor _w_transpose;
+  Tensor _matmul_out;
+};
+
 } // namespace dl

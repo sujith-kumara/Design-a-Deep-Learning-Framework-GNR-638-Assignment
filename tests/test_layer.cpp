@@ -34,7 +34,39 @@ void test_conv2d_layer() {
   std::cout << "Conv2D backward test passed." << std::endl;
 }
 
+void test_linear_layer() {
+  // 1. Forward Pass Shape Test
+  dl::Linear linear(10, 5);  // in=10, out=5
+  dl::Tensor input({2, 10}); // B=2, in=10
+
+  dl::Tensor output = linear.forward(input);
+
+  // Output shape should be (2, 5)
+  assert(output.shape().size() == 2);
+  assert(output.shape()[0] == 2);
+  assert(output.shape()[1] == 5);
+  std::cout << "Linear forward shape test passed." << std::endl;
+
+  // 2. Backward Pass Test
+  dl::Tensor loss = output.sum();
+  loss.backward();
+
+  assert(linear.W.grad != nullptr);
+  assert(linear.b.grad != nullptr);
+
+  // Weights gradient should be (5, 10)
+  assert(linear.W.grad->shape()[0] == 5);
+  assert(linear.W.grad->shape()[1] == 10);
+
+  // Bias gradient should be (1, 5)
+  assert(linear.b.grad->shape()[0] == 1);
+  assert(linear.b.grad->shape()[1] == 5);
+
+  std::cout << "Linear backward test passed." << std::endl;
+}
+
 int main() {
   test_conv2d_layer();
+  test_linear_layer();
   return 0;
 }

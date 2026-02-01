@@ -200,6 +200,25 @@ Tensor Tensor::matmul(const Tensor &other) const {
   return res;
 }
 
+Tensor Tensor::transpose() const {
+  if (_shape.size() != 2)
+    throw std::runtime_error("Transpose only supported for 2D tensors");
+  int M = _shape[0];
+  int N = _shape[1];
+  Tensor res({N, M});
+  for (int i = 0; i < M; ++i) {
+    for (int j = 0; j < N; ++j) {
+      res({j, i}) = (*this)({i, j});
+    }
+  }
+  if (this->requires_grad) {
+    res.requires_grad = true;
+    res.op_type = "transpose";
+    res.parents = {(Tensor *)this};
+  }
+  return res;
+}
+
 Tensor Tensor::conv2d(const Tensor &kernel, int stride, int padding) const {
   if (_shape.size() != 4 || kernel._shape.size() != 4)
     throw std::runtime_error("Conv2d expects 4D input and kernel");
@@ -524,6 +543,19 @@ void Tensor::backward() {
                   X.grad->operator()({b, c, max_h, max_w}) +=
                       d_out({b, c, h, w});
               }
+      }
+    } else if (op == "transpose") {
+      Tensor &parent = *parents[0];
+      if (parent.requires_grad) {
+        if (!parent.grad)
+          parent.grad = new Tensor(parent._shape);
+        // Correct way to backprop transpose: transpose the incoming gradient
+        // incoming d_out is (N, M), parent is (M, N)
+        for (int i = 0; i < parent._shape[0]; ++i) {
+          for (int j = 0; j < parent._shape[1]; ++j) {
+            parent.grad->operator()({i, j}) += d_out({j, i});
+          }
+        }
       }
     } else if (op == "sum") {
       Tensor &parent = *parents[0];
