@@ -1,4 +1,5 @@
 #include "deeplearn/tensor.h"
+#include <algorithm>
 #include <iomanip>
 #include <iostream> // Added for std::cout, std::endl
 #include <numeric>
@@ -248,11 +249,20 @@ Tensor Tensor::maxpool2d(int kernel_size, int stride) const {
 }
 
 void Tensor::zero_grad() {
-  if (grad) {
-    grad->zero_();
+  std::vector<Tensor *> stack;
+  std::unordered_set<Tensor *> visited;
+  stack.push_back(this);
+  while (!stack.empty()) {
+    Tensor *node = stack.back();
+    stack.pop_back();
+    if (visited.find(node) == visited.end()) {
+      visited.insert(node);
+      if (node->grad)
+        node->grad->zero_();
+      for (auto p : node->parents)
+        stack.push_back(p);
+    }
   }
-  for (auto p : parents)
-    p->zero_grad();
 }
 
 void Tensor::backward() {
@@ -266,144 +276,176 @@ void Tensor::backward() {
     }
   }
 
-  if (!grad || op_type == "")
-    return;
+  // Build topological sort (iterative post-order)
+  std::vector<Tensor *> topo;
+  std::unordered_set<Tensor *> visited;
+  std::unordered_set<Tensor *> visiting;
+  std::vector<Tensor *> stack;
+  stack.push_back(this);
 
-  if (op_type == "add") {
-    for (auto p : parents) {
-      if (p->requires_grad) {
-        if (!p->grad)
-          p->grad = new Tensor(p->_shape);
-        for (size_t i = 0; i < grad->_data.size(); ++i)
-          p->grad->_data[i] += grad->_data[i];
+  while (!stack.empty()) {
+    Tensor *node = stack.back();
+    if (visited.find(node) == visited.end()) {
+      if (visiting.find(node) == visiting.end()) {
+        visiting.insert(node);
+        for (auto p : node->parents) {
+          if (p->requires_grad)
+            stack.push_back(p);
+        }
+      } else {
+        visiting.erase(node);
+        visited.insert(node);
+        topo.push_back(node);
+        stack.pop_back();
       }
-    }
-  } else if (op_type == "sub") {
-    if (parents[0]->requires_grad) {
-      if (!parents[0]->grad)
-        parents[0]->grad = new Tensor(parents[0]->_shape);
-      for (size_t i = 0; i < grad->_data.size(); ++i)
-        parents[0]->grad->_data[i] += grad->_data[i];
-    }
-    if (parents[1]->requires_grad) {
-      if (!parents[1]->grad)
-        parents[1]->grad = new Tensor(parents[1]->_shape);
-      for (size_t i = 0; i < grad->_data.size(); ++i)
-        parents[1]->grad->_data[i] -= grad->_data[i];
-    }
-  } else if (op_type == "mul") {
-    if (parents[0]->requires_grad) {
-      if (!parents[0]->grad)
-        parents[0]->grad = new Tensor(parents[0]->_shape);
-      for (size_t i = 0; i < grad->_data.size(); ++i)
-        parents[0]->grad->_data[i] += grad->_data[i] * parents[1]->_data[i];
-    }
-    if (parents[1]->requires_grad) {
-      if (!parents[1]->grad)
-        parents[1]->grad = new Tensor(parents[1]->_shape);
-      for (size_t i = 0; i < grad->_data.size(); ++i)
-        parents[1]->grad->_data[i] += grad->_data[i] * parents[0]->_data[i];
-    }
-  } else if (op_type == "matmul") {
-    // Y = A @ B -> dA = dY @ B^T, dB = A^T @ dY
-    Tensor &A = *parents[0];
-    Tensor &B = *parents[1];
-    if (A.requires_grad) {
-      if (!A.grad)
-        A.grad = new Tensor(A._shape);
-      int M = A._shape[0], K = A._shape[1], N = B._shape[1];
-      for (int i = 0; i < M; ++i)
-        for (int k = 0; k < K; ++k)
-          for (int j = 0; j < N; ++j)
-            A.grad->operator()({i, k}) += grad->operator()({i, j}) * B({k, j});
-    }
-    if (B.requires_grad) {
-      if (!B.grad)
-        B.grad = new Tensor(B._shape);
-      int M = A._shape[0], K = A._shape[1], N = B._shape[1];
-      for (int k = 0; k < K; ++k)
-        for (int j = 0; j < N; ++j)
-          for (int i = 0; i < M; ++i)
-            B.grad->operator()({k, j}) += A({i, k}) * grad->operator()({i, j});
-    }
-  } else if (op_type == "conv2d") {
-    Tensor &X = *parents[0];
-    Tensor &K = *parents[1];
-    int B = X._shape[0], C = X._shape[1], H = X._shape[2], W = X._shape[3];
-    int Cout = K._shape[0], Cin = K._shape[1], kH = K._shape[2],
-        kW = K._shape[3];
-    int Hout = (H + 2 * padding - kH) / stride + 1;
-    int Wout = (W + 2 * padding - kW) / stride + 1;
-
-    if (X.requires_grad) {
-      if (!X.grad)
-        X.grad = new Tensor(X._shape);
-      for (int b = 0; b < B; ++b)
-        for (int co = 0; co < Cout; ++co)
-          for (int h = 0; h < Hout; ++h)
-            for (int w = 0; w < Wout; ++w)
-              for (int ci = 0; ci < Cin; ++ci)
-                for (int kh = 0; kh < kH; ++kh)
-                  for (int kw = 0; kw < kW; ++kw) {
-                    int ih = h * stride + kh - padding;
-                    int iw = w * stride + kw - padding;
-                    if (ih >= 0 && ih < H && iw >= 0 && iw < W)
-                      X.grad->operator()({b, ci, ih, iw}) +=
-                          grad->operator()({b, co, h, w}) * K({co, ci, kh, kw});
-                  }
-    }
-    if (K.requires_grad) {
-      if (!K.grad)
-        K.grad = new Tensor(K._shape);
-      for (int b = 0; b < B; ++b)
-        for (int co = 0; co < Cout; ++co)
-          for (int h = 0; h < Hout; ++h)
-            for (int w = 0; w < Wout; ++w)
-              for (int ci = 0; ci < Cin; ++ci)
-                for (int kh = 0; kh < kH; ++kh)
-                  for (int kw = 0; kw < kW; ++kw) {
-                    int ih = h * stride + kh - padding;
-                    int iw = w * stride + kw - padding;
-                    if (ih >= 0 && ih < H && iw >= 0 && iw < W)
-                      K.grad->operator()({co, ci, kh, kw}) +=
-                          grad->operator()({b, co, h, w}) * X({b, ci, ih, iw});
-                  }
-    }
-  } else if (op_type == "maxpool2d") {
-    Tensor &X = *parents[0];
-    int B = X._shape[0], C = X._shape[1], H = X._shape[2], W = X._shape[3];
-    int Hout = (H - kernel_size) / stride + 1;
-    int Wout = (W - kernel_size) / stride + 1;
-
-    if (X.requires_grad) {
-      if (!X.grad)
-        X.grad = new Tensor(X._shape);
-      for (int b = 0; b < B; ++b)
-        for (int c = 0; c < C; ++c)
-          for (int h = 0; h < Hout; ++h)
-            for (int w = 0; w < Wout; ++w) {
-              float max_val = -1e30f;
-              int max_h = -1, max_w = -1;
-              for (int kh = 0; kh < kernel_size; ++kh)
-                for (int kw = 0; kw < kernel_size; ++kw) {
-                  int ih = h * stride + kh;
-                  int iw = w * stride + kw;
-                  if (X({b, c, ih, iw}) > max_val) {
-                    max_val = X({b, c, ih, iw});
-                    max_h = ih;
-                    max_w = iw;
-                  }
-                }
-              if (max_h != -1)
-                X.grad->operator()({b, c, max_h, max_w}) +=
-                    grad->operator()({b, c, h, w});
-            }
+    } else {
+      stack.pop_back();
     }
   }
 
-  // Recursively call backward (naive approach)
-  for (auto p : parents)
-    p->backward();
+  // Iterate in reverse topological order (root to leaves)
+  for (int i = (int)topo.size() - 1; i >= 0; --i) {
+    Tensor *node = topo[i];
+    if (!node->grad || node->op_type == "")
+      continue;
+
+    Tensor &d_out = *(node->grad);
+    const std::string &op = node->op_type;
+    auto &parents = node->parents;
+
+    if (op == "add") {
+      for (auto p : parents) {
+        if (p->requires_grad) {
+          if (!p->grad)
+            p->grad = new Tensor(p->_shape);
+          for (size_t k = 0; k < d_out._data.size(); ++k)
+            p->grad->_data[k] += d_out._data[k];
+        }
+      }
+    } else if (op == "sub") {
+      if (parents[0]->requires_grad) {
+        if (!parents[0]->grad)
+          parents[0]->grad = new Tensor(parents[0]->_shape);
+        for (size_t k = 0; k < d_out._data.size(); ++k)
+          parents[0]->grad->_data[k] += d_out._data[k];
+      }
+      if (parents[1]->requires_grad) {
+        if (!parents[1]->grad)
+          parents[1]->grad = new Tensor(parents[1]->_shape);
+        for (size_t k = 0; k < d_out._data.size(); ++k)
+          parents[1]->grad->_data[k] -= d_out._data[k];
+      }
+    } else if (op == "mul") {
+      if (parents[0]->requires_grad) {
+        if (!parents[0]->grad)
+          parents[0]->grad = new Tensor(parents[0]->_shape);
+        for (size_t k = 0; k < d_out._data.size(); ++k)
+          parents[0]->grad->_data[k] += d_out._data[k] * parents[1]->_data[k];
+      }
+      if (parents[1]->requires_grad) {
+        if (!parents[1]->grad)
+          parents[1]->grad = new Tensor(parents[1]->_shape);
+        for (size_t k = 0; k < d_out._data.size(); ++k)
+          parents[1]->grad->_data[k] += d_out._data[k] * parents[0]->_data[k];
+      }
+    } else if (op == "matmul") {
+      Tensor &A = *parents[0];
+      Tensor &B = *parents[1];
+      if (A.requires_grad) {
+        if (!A.grad)
+          A.grad = new Tensor(A._shape);
+        int M = A._shape[0], K = A._shape[1], N = B._shape[1];
+        for (int i = 0; i < M; ++i)
+          for (int k = 0; k < K; ++k)
+            for (int j = 0; j < N; ++j)
+              A.grad->operator()({i, k}) += d_out({i, j}) * B({k, j});
+      }
+      if (B.requires_grad) {
+        if (!B.grad)
+          B.grad = new Tensor(B._shape);
+        int M = A._shape[0], K = A._shape[1], N = B._shape[1];
+        for (int k = 0; k < K; ++k)
+          for (int j = 0; j < N; ++j)
+            for (int i = 0; i < M; ++i)
+              B.grad->operator()({k, j}) += A({i, k}) * d_out({i, j});
+      }
+    } else if (op == "conv2d") {
+      Tensor &X = *parents[0];
+      Tensor &K = *parents[1];
+      int B = X._shape[0], C = X._shape[1], H = X._shape[2], W = X._shape[3];
+      int Cout = K._shape[0], Cin = K._shape[1], kH = K._shape[2],
+          kW = K._shape[3];
+      int s = node->stride, p = node->padding;
+      int Hout = (H + 2 * p - kH) / s + 1;
+      int Wout = (W + 2 * p - kW) / s + 1;
+
+      if (X.requires_grad) {
+        if (!X.grad)
+          X.grad = new Tensor(X._shape);
+        for (int b = 0; b < B; ++b)
+          for (int co = 0; co < Cout; ++co)
+            for (int h = 0; h < Hout; ++h)
+              for (int w = 0; w < Wout; ++w)
+                for (int ci = 0; ci < Cin; ++ci)
+                  for (int kh = 0; kh < kH; ++kh)
+                    for (int kw = 0; kw < kW; ++kw) {
+                      int ih = h * s + kh - p;
+                      int iw = w * s + kw - p;
+                      if (ih >= 0 && ih < H && iw >= 0 && iw < W)
+                        X.grad->operator()({b, ci, ih, iw}) +=
+                            d_out({b, co, h, w}) * K({co, ci, kh, kw});
+                    }
+      }
+      if (K.requires_grad) {
+        if (!K.grad)
+          K.grad = new Tensor(K._shape);
+        for (int b = 0; b < B; ++b)
+          for (int co = 0; co < Cout; ++co)
+            for (int h = 0; h < Hout; ++h)
+              for (int w = 0; w < Wout; ++w)
+                for (int ci = 0; ci < Cin; ++ci)
+                  for (int kh = 0; kh < kH; ++kh)
+                    for (int kw = 0; kw < kW; ++kw) {
+                      int ih = h * s + kh - p;
+                      int iw = w * s + kw - p;
+                      if (ih >= 0 && ih < H && iw >= 0 && iw < W)
+                        K.grad->operator()({co, ci, kh, kw}) +=
+                            d_out({b, co, h, w}) * X({b, ci, ih, iw});
+                    }
+      }
+    } else if (op == "maxpool2d") {
+      Tensor &X = *parents[0];
+      int B = X._shape[0], C = X._shape[1], H = X._shape[2], W = X._shape[3];
+      int s = node->stride, k = node->kernel_size;
+      int Hout = (H - k) / s + 1;
+      int Wout = (W - k) / s + 1;
+
+      if (X.requires_grad) {
+        if (!X.grad)
+          X.grad = new Tensor(X._shape);
+        for (int b = 0; b < B; ++b)
+          for (int c = 0; c < C; ++c)
+            for (int h = 0; h < Hout; ++h)
+              for (int w = 0; w < Wout; ++w) {
+                float max_val = -1e30f;
+                int max_h = -1, max_w = -1;
+                for (int kh = 0; kh < k; ++kh)
+                  for (int kw = 0; kw < k; ++kw) {
+                    int ih = h * s + kh;
+                    int iw = w * s + kw;
+                    if (X({b, c, ih, iw}) > max_val) {
+                      max_val = X({b, c, ih, iw});
+                      max_h = ih;
+                      max_w = iw;
+                    }
+                  }
+                if (max_h != -1)
+                  X.grad->operator()({b, c, max_h, max_w}) +=
+                      d_out({b, c, h, w});
+              }
+      }
+    }
+  }
 }
 
 } // namespace dl

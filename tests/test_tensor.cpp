@@ -73,28 +73,24 @@ int main() {
   assert(b_s.grad->operator()({0}) == 1.0f);
   std::cout << "Backward test (add) passed." << std::endl;
 
-  // Simple scalar chain: (x * y) + z
-  dl::Tensor x({1});
-  x({0}) = 2.0f;
-  x.requires_grad = true;
-  dl::Tensor y({1});
-  y({0}) = 3.0f;
-  y.requires_grad = true;
-  dl::Tensor z({1});
-  z({0}) = 4.0f;
-  z.requires_grad = true;
+  // 6. Diamond graph (shared node)
+  dl::Tensor x_d({1});
+  x_d({0}) = 2.0f;
+  x_d.requires_grad = true;
+  dl::Tensor y_d({1});
+  y_d({0}) = 3.0f;
+  y_d.requires_grad = true;
 
-  dl::Tensor xy = x.mul(y); // Keep intermediate alive
-  dl::Tensor res = xy.add(z);
-  res.backward();
+  dl::Tensor path1 = x_d.mul(y_d);    // 6
+  dl::Tensor path2 = x_d.add(y_d);    // 5
+  dl::Tensor loss = path1.add(path2); // 11
 
-  // dres/dx = y = 3
-  assert(x.grad->operator()({0}) == 3.0f);
-  // dres/dy = x = 2
-  assert(y.grad->operator()({0}) == 2.0f);
-  // dres/dz = 1
-  assert(z.grad->operator()({0}) == 1.0f);
-  std::cout << "Backward test (mul + add chain) passed." << std::endl;
+  loss.backward();
+  // dloss/dx = dpath1/dx + dpath2/dx = y_d + 1 = 3 + 1 = 4
+  // dloss/dy = dpath1/dy + dpath2/dy = x_d + 1 = 2 + 1 = 3
+  assert(x_d.grad->operator()({0}) == 4.0f);
+  assert(y_d.grad->operator()({0}) == 3.0f);
+  std::cout << "Diamond graph test passed." << std::endl;
 
   std::cout << "All basic Tensor tests passed!" << std::endl;
   return 0;

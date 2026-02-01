@@ -1,7 +1,9 @@
 #pragma once
 
 #include <iostream>
+#include <stack>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 namespace dl {
