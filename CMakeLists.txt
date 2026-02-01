@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.10)
+project(DeepLearnFramework)
+
+set(CMAKE_CXX_STANDARD 17)
+
+# Include directories
+include_directories(framework/include)
+
+# Skeleton library
+add_library(deeplearn 
+    framework/src/tensor.cpp
+)
+
+# Placeholders for other subdirectories
+# add_subdirectory(tests)
+# add_subdirectory(bindings)

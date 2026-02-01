@@ -1,2 +1,0 @@
-/usr/bin/ar qc libdeeplearn.a CMakeFiles/deeplearn.dir/src/tensor.cpp.o
-/usr/bin/ranlib libdeeplearn.a
