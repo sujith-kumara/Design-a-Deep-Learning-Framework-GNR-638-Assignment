@@ -130,6 +130,44 @@ test_tensor/fast:
 	cd /Users/sujith/Desktop/IITB/assignment_github_folder/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_tensor.dir/build.make tests/CMakeFiles/test_tensor.dir/build
 .PHONY : test_tensor/fast
 
+# Convenience name for target.
+tests/CMakeFiles/test_layer.dir/rule:
+	cd /Users/sujith/Desktop/IITB/assignment_github_folder/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_layer.dir/rule
+.PHONY : tests/CMakeFiles/test_layer.dir/rule
+
+# Convenience name for target.
+test_layer: tests/CMakeFiles/test_layer.dir/rule
+.PHONY : test_layer
+
+# fast build rule for target.
+test_layer/fast:
+	cd /Users/sujith/Desktop/IITB/assignment_github_folder/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_layer.dir/build.make tests/CMakeFiles/test_layer.dir/build
+.PHONY : test_layer/fast
+
+test_layer.o: test_layer.cpp.o
+.PHONY : test_layer.o
+
+# target to build an object file
+test_layer.cpp.o:
+	cd /Users/sujith/Desktop/IITB/assignment_github_folder/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_layer.dir/build.make tests/CMakeFiles/test_layer.dir/test_layer.cpp.o
+.PHONY : test_layer.cpp.o
+
+test_layer.i: test_layer.cpp.i
+.PHONY : test_layer.i
+
+# target to preprocess a source file
+test_layer.cpp.i:
+	cd /Users/sujith/Desktop/IITB/assignment_github_folder/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_layer.dir/build.make tests/CMakeFiles/test_layer.dir/test_layer.cpp.i
+.PHONY : test_layer.cpp.i
+
+test_layer.s: test_layer.cpp.s
+.PHONY : test_layer.s
+
+# target to generate assembly for a file
+test_layer.cpp.s:
+	cd /Users/sujith/Desktop/IITB/assignment_github_folder/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_layer.dir/build.make tests/CMakeFiles/test_layer.dir/test_layer.cpp.s
+.PHONY : test_layer.cpp.s
+
 test_tensor.o: test_tensor.cpp.o
 .PHONY : test_tensor.o
 
@@ -162,7 +200,11 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... test_layer"
 	@echo "... test_tensor"
+	@echo "... test_layer.o"
+	@echo "... test_layer.i"
+	@echo "... test_layer.s"
 	@echo "... test_tensor.o"
 	@echo "... test_tensor.i"
 	@echo "... test_tensor.s"

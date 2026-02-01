@@ -60,4 +60,5 @@ set(CMAKE_MAKEFILE_PRODUCTS
 set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/deeplearn.dir/DependInfo.cmake"
   "tests/CMakeFiles/test_tensor.dir/DependInfo.cmake"
+  "tests/CMakeFiles/test_layer.dir/DependInfo.cmake"
   )

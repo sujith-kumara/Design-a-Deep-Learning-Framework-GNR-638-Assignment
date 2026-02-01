@@ -9,6 +9,7 @@ include_directories(framework/include)
 # Skeleton library
 add_library(deeplearn 
     framework/src/tensor.cpp
+    framework/src/layers.cpp
 )
 
 # Subdirectories

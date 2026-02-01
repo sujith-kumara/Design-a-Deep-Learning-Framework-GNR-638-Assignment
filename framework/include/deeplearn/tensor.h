@@ -12,6 +12,7 @@ class Tensor {
 public:
   Tensor();
   explicit Tensor(const std::vector<int> &shape);
+  Tensor(const std::vector<int> &shape, const std::vector<float> &data);
   ~Tensor();
 
   // Helper methods
@@ -28,10 +29,13 @@ public:
   Tensor sub(const Tensor &other) const;
   Tensor mul(const Tensor &other) const;
   Tensor matmul(const Tensor &other) const;
+  Tensor sum() const; // Added
 
   // Neural Network Operations
   Tensor conv2d(const Tensor &kernel, int stride = 1, int padding = 0) const;
   Tensor maxpool2d(int kernel_size, int stride = 1) const;
+
+  const std::vector<int> &shape() const { return _shape; } // Added
 
   // Indexing helpers
   float &operator()(const std::vector<int> &indices);

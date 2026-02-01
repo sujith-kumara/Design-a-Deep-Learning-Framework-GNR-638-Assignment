@@ -142,6 +142,43 @@ test_tensor/fast:
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_tensor.dir/build.make tests/CMakeFiles/test_tensor.dir/build
 .PHONY : test_tensor/fast
 
+#=============================================================================
+# Target rules for targets named test_layer
+
+# Build rule for target.
+test_layer: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_layer
+.PHONY : test_layer
+
+# fast build rule for target.
+test_layer/fast:
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_layer.dir/build.make tests/CMakeFiles/test_layer.dir/build
+.PHONY : test_layer/fast
+
+framework/src/layers.o: framework/src/layers.cpp.o
+.PHONY : framework/src/layers.o
+
+# target to build an object file
+framework/src/layers.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/deeplearn.dir/build.make CMakeFiles/deeplearn.dir/framework/src/layers.cpp.o
+.PHONY : framework/src/layers.cpp.o
+
+framework/src/layers.i: framework/src/layers.cpp.i
+.PHONY : framework/src/layers.i
+
+# target to preprocess a source file
+framework/src/layers.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/deeplearn.dir/build.make CMakeFiles/deeplearn.dir/framework/src/layers.cpp.i
+.PHONY : framework/src/layers.cpp.i
+
+framework/src/layers.s: framework/src/layers.cpp.s
+.PHONY : framework/src/layers.s
+
+# target to generate assembly for a file
+framework/src/layers.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/deeplearn.dir/build.make CMakeFiles/deeplearn.dir/framework/src/layers.cpp.s
+.PHONY : framework/src/layers.cpp.s
+
 framework/src/tensor.o: framework/src/tensor.cpp.o
 .PHONY : framework/src/tensor.o
 
@@ -175,7 +212,11 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... deeplearn"
+	@echo "... test_layer"
 	@echo "... test_tensor"
+	@echo "... framework/src/layers.o"
+	@echo "... framework/src/layers.i"
+	@echo "... framework/src/layers.s"
 	@echo "... framework/src/tensor.o"
 	@echo "... framework/src/tensor.i"
 	@echo "... framework/src/tensor.s"

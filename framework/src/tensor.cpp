@@ -14,6 +14,14 @@ Tensor::Tensor(const std::vector<int> &shape)
   _data.assign(total_size, 0.0f);
 }
 
+Tensor::Tensor(const std::vector<int> &shape, const std::vector<float> &data)
+    : _shape(shape), _data(data), grad(nullptr), requires_grad(false),
+      op_type("") {
+  if (_data.size() != numel()) {
+    throw std::runtime_error("Data size mismatch in Tensor constructor");
+  }
+}
+
 Tensor::~Tensor() {
   // Note: grad ownership should be handled carefully later in autograd
 }
@@ -78,11 +86,52 @@ float Tensor::operator()(const std::vector<int> &indices) const {
 }
 
 Tensor Tensor::add(const Tensor &other) const {
-  if (_shape != other._shape)
-    throw std::runtime_error("Shape mismatch for add");
-  Tensor res(_shape);
-  for (size_t i = 0; i < _data.size(); ++i)
-    res._data[i] = _data[i] + other._data[i];
+  // Check broadcasting compatibility
+  std::vector<int> res_shape = _shape;
+  bool broadcast = false;
+  if (_shape != other._shape) {
+    if (_shape.size() != other._shape.size())
+      throw std::runtime_error("Broadcasting requires same number of dims");
+    for (size_t i = 0; i < _shape.size(); ++i) {
+      if (_shape[i] != other._shape[i]) {
+        if (_shape[i] == 1)
+          res_shape[i] = other._shape[i];
+        else if (other._shape[i] == 1)
+          res_shape[i] = _shape[i];
+        else
+          throw std::runtime_error("Incompatible shapes for add");
+        broadcast = true;
+      }
+    }
+  }
+
+  Tensor res(res_shape);
+  if (!broadcast) {
+    for (size_t i = 0; i < _data.size(); ++i)
+      res._data[i] = _data[i] + other._data[i];
+  } else {
+    // Basic broadcasting implementation
+    size_t total = res.numel();
+    std::vector<int> indices(res_shape.size(), 0);
+    for (size_t i = 0; i < total; ++i) {
+      std::vector<int> this_idx = indices;
+      std::vector<int> other_idx = indices;
+      for (size_t d = 0; d < _shape.size(); ++d) {
+        if (_shape[d] == 1)
+          this_idx[d] = 0;
+        if (other._shape[d] == 1)
+          other_idx[d] = 0;
+      }
+      res._data[i] = operator()(this_idx) + other(other_idx);
+
+      // Increment indices
+      for (int d = (int)res_shape.size() - 1; d >= 0; --d) {
+        if (++indices[d] < res_shape[d])
+          break;
+        indices[d] = 0;
+      }
+    }
+  }
 
   if (this->requires_grad || other.requires_grad) {
     res.requires_grad = true;
@@ -248,6 +297,19 @@ Tensor Tensor::maxpool2d(int kernel_size, int stride) const {
   return res;
 }
 
+Tensor Tensor::sum() const {
+  float total = 0.0f;
+  for (float val : _data)
+    total += val;
+  Tensor res({1}, {total});
+  if (this->requires_grad) {
+    res.requires_grad = true;
+    res.op_type = "sum";
+    res.parents = {(Tensor *)this};
+  }
+  return res;
+}
+
 void Tensor::zero_grad() {
   std::vector<Tensor *> stack;
   std::unordered_set<Tensor *> visited;
@@ -318,8 +380,27 @@ void Tensor::backward() {
         if (p->requires_grad) {
           if (!p->grad)
             p->grad = new Tensor(p->_shape);
-          for (size_t k = 0; k < d_out._data.size(); ++k)
-            p->grad->_data[k] += d_out._data[k];
+          if (p->_shape == node->_shape) {
+            for (size_t k = 0; k < d_out._data.size(); ++k)
+              p->grad->_data[k] += d_out._data[k];
+          } else {
+            // Broadcasting backward
+            size_t total = d_out.numel();
+            std::vector<int> indices(d_out._shape.size(), 0);
+            for (size_t k = 0; k < total; ++k) {
+              std::vector<int> p_idx = indices;
+              for (size_t d = 0; d < p->_shape.size(); ++d) {
+                if (p->_shape[d] == 1)
+                  p_idx[d] = 0;
+              }
+              p->grad->operator()(p_idx) += d_out._data[k];
+              for (int d = (int)d_out._shape.size() - 1; d >= 0; --d) {
+                if (++indices[d] < d_out._shape[d])
+                  break;
+                indices[d] = 0;
+              }
+            }
+          }
         }
       }
     } else if (op == "sub") {
@@ -443,6 +524,15 @@ void Tensor::backward() {
                   X.grad->operator()({b, c, max_h, max_w}) +=
                       d_out({b, c, h, w});
               }
+      }
+    } else if (op == "sum") {
+      Tensor &parent = *parents[0];
+      if (parent.requires_grad) {
+        if (!parent.grad)
+          parent.grad = new Tensor(parent._shape);
+        float grad_val = d_out._data[0];
+        for (size_t k = 0; k < parent.grad->_data.size(); ++k)
+          parent.grad->_data[k] += grad_val;
       }
     }
   }

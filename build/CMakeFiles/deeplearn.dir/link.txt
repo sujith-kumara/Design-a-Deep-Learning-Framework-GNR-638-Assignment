@@ -1,2 +1,2 @@
-/usr/bin/ar qc libdeeplearn.a CMakeFiles/deeplearn.dir/framework/src/tensor.cpp.o
+/usr/bin/ar qc libdeeplearn.a CMakeFiles/deeplearn.dir/framework/src/tensor.cpp.o CMakeFiles/deeplearn.dir/framework/src/layers.cpp.o
 /usr/bin/ranlib libdeeplearn.a
