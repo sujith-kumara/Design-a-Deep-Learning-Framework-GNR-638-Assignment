@@ -55,16 +55,46 @@ int main() {
   assert(pool_out({0, 0, 0, 0}) == 1.0f);
   std::cout << "Maxpool2d test passed." << std::endl;
 
-  // 5. Graph metadata
-  a.requires_grad = true;
-  b.requires_grad = true;
-  dl::Tensor e = a.add(b);
+  // 5. Graph metadata and backward
+  dl::Tensor a_s({1});
+  a_s({0}) = 1.0f;
+  dl::Tensor b_s({1});
+  b_s({0}) = 2.0f;
+  a_s.requires_grad = true;
+  b_s.requires_grad = true;
+  dl::Tensor e = a_s.add(b_s);
   assert(e.requires_grad == true);
   assert(e.op_type == "add");
-  assert(e.parents.size() == 2);
-  assert(e.parents[0] == &a);
-  assert(e.parents[1] == &b);
-  std::cout << "Graph metadata test (add) passed." << std::endl;
+
+  e.backward();
+  assert(a_s.grad != nullptr);
+  assert(a_s.grad->operator()({0}) == 1.0f);
+  assert(b_s.grad != nullptr);
+  assert(b_s.grad->operator()({0}) == 1.0f);
+  std::cout << "Backward test (add) passed." << std::endl;
+
+  // Simple scalar chain: (x * y) + z
+  dl::Tensor x({1});
+  x({0}) = 2.0f;
+  x.requires_grad = true;
+  dl::Tensor y({1});
+  y({0}) = 3.0f;
+  y.requires_grad = true;
+  dl::Tensor z({1});
+  z({0}) = 4.0f;
+  z.requires_grad = true;
+
+  dl::Tensor xy = x.mul(y); // Keep intermediate alive
+  dl::Tensor res = xy.add(z);
+  res.backward();
+
+  // dres/dx = y = 3
+  assert(x.grad->operator()({0}) == 3.0f);
+  // dres/dy = x = 2
+  assert(y.grad->operator()({0}) == 2.0f);
+  // dres/dz = 1
+  assert(z.grad->operator()({0}) == 1.0f);
+  std::cout << "Backward test (mul + add chain) passed." << std::endl;
 
   std::cout << "All basic Tensor tests passed!" << std::endl;
   return 0;

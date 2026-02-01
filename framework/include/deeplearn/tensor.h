@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -10,14 +12,14 @@ public:
   explicit Tensor(const std::vector<int> &shape);
   ~Tensor();
 
-  // ... (rest of the class)
-
   // Helper methods
   const std::vector<int> &size() const { return _shape; }
   size_t numel() const;
   void reshape(const std::vector<int> &new_shape);
   void zero_();
   void print() const;
+  void backward();
+  void zero_grad();
 
   // Mathematical Operations
   Tensor add(const Tensor &other) const;
@@ -33,11 +35,14 @@ public:
   float &operator()(const std::vector<int> &indices);
   float operator()(const std::vector<int> &indices) const;
 
-  // Autograd-ready members
+  // Autograd members
   bool requires_grad{false};
   Tensor *grad{nullptr};
   std::vector<Tensor *> parents;
   std::string op_type{""};
+  int stride{1};
+  int padding{0};
+  int kernel_size{0};
 
 private:
   std::vector<float> _data;
