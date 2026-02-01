@@ -92,6 +92,46 @@ int main() {
   assert(y_d.grad->operator()({0}) == 3.0f);
   std::cout << "Diamond graph test passed." << std::endl;
 
+  // 7. ReLU test
+  dl::Tensor x_relu({2});
+  x_relu({0}) = 1.0f;
+  x_relu({1}) = -1.0f;
+  x_relu.requires_grad = true;
+  dl::Tensor y_relu = x_relu.relu();
+  assert(y_relu({0}) == 1.0f);
+  assert(y_relu({1}) == 0.0f);
+
+  dl::Tensor loss_relu = y_relu.sum();
+  loss_relu.backward();
+  assert(x_relu.grad->operator()({0}) == 1.0f);
+  assert(x_relu.grad->operator()({1}) == 0.0f);
+  std::cout << "ReLU test passed." << std::endl;
+
+  // 8. Softmax test
+  dl::Tensor x_sm({2});
+  x_sm({0}) = 1.0f;
+  x_sm({1}) = 1.0f; // Softmax([1,1]) = [0.5, 0.5]
+  x_sm.requires_grad = true;
+  dl::Tensor y_sm = x_sm.softmax(0);
+  assert(std::abs(y_sm({0}) - 0.5f) < 1e-5);
+  assert(std::abs(y_sm({1}) - 0.5f) < 1e-5);
+
+  // Backward check
+
+  // Re-run with sum
+  x_sm.zero_grad();
+  y_sm = x_sm.softmax(0);
+  // dx = y * (dy - sum(y*dy))
+  // if dy = [1, 1] (from y.sum())
+  // sum(y*dy) = 0.5*1 + 0.5*1 = 1
+  // dx_0 = 0.5 * (1 - 1) = 0
+  // dx_1 = 0.5 * (1 - 1) = 0
+  dl::Tensor loss_sm = y_sm.sum();
+  loss_sm.backward();
+  assert(std::abs(x_sm.grad->operator()({0})) < 1e-5);
+  assert(std::abs(x_sm.grad->operator()({1})) < 1e-5);
+  std::cout << "Softmax test passed." << std::endl;
+
   std::cout << "All basic Tensor tests passed!" << std::endl;
   return 0;
 }

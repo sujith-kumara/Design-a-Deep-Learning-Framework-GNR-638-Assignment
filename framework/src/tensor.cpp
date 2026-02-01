@@ -219,6 +219,63 @@ Tensor Tensor::transpose() const {
   return res;
 }
 
+Tensor Tensor::relu() const {
+  Tensor res(_shape);
+  for (size_t i = 0; i < _data.size(); ++i) {
+    res._data[i] = std::max(0.0f, _data[i]);
+  }
+  if (this->requires_grad) {
+    res.requires_grad = true;
+    res.op_type = "relu";
+    res.parents = {(Tensor *)this};
+  }
+  return res;
+}
+
+Tensor Tensor::softmax(int dim) const {
+  if (dim < 0)
+    dim += (int)_shape.size();
+  if (dim < 0 || dim >= (int)_shape.size())
+    throw std::runtime_error("Invalid dimension for softmax");
+
+  Tensor res(_shape);
+  int dim_size = _shape[dim];
+  int stride_after = 1;
+  for (int i = dim + 1; i < (int)_shape.size(); ++i)
+    stride_after *= _shape[i];
+  int stride_before = numel() / (dim_size * stride_after);
+
+  for (int b = 0; b < stride_before; ++b) {
+    for (int a = 0; a < stride_after; ++a) {
+      size_t base_idx = b * dim_size * stride_after + a;
+      // Find max for stability
+      float max_val = -1e30f;
+      for (int i = 0; i < dim_size; ++i) {
+        max_val = std::max(max_val, _data[base_idx + i * stride_after]);
+      }
+      // Compute sum and exps
+      float sum = 0.0f;
+      for (int i = 0; i < dim_size; ++i) {
+        float e = std::exp(_data[base_idx + i * stride_after] - max_val);
+        res._data[base_idx + i * stride_after] = e;
+        sum += e;
+      }
+      // Normalize
+      for (int i = 0; i < dim_size; ++i) {
+        res._data[base_idx + i * stride_after] /= sum;
+      }
+    }
+  }
+
+  if (this->requires_grad) {
+    res.requires_grad = true;
+    res.op_type = "softmax";
+    res.parents = {(Tensor *)this};
+    res.stride = dim; // Reuse stride member to store dim for backward
+  }
+  return res;
+}
+
 Tensor Tensor::conv2d(const Tensor &kernel, int stride, int padding) const {
   if (_shape.size() != 4 || kernel._shape.size() != 4)
     throw std::runtime_error("Conv2d expects 4D input and kernel");
@@ -543,6 +600,47 @@ void Tensor::backward() {
                   X.grad->operator()({b, c, max_h, max_w}) +=
                       d_out({b, c, h, w});
               }
+      }
+    } else if (op == "relu") {
+      Tensor &X = *parents[0];
+      if (X.requires_grad) {
+        if (!X.grad)
+          X.grad = new Tensor(X._shape);
+        for (size_t k = 0; k < d_out._data.size(); ++k) {
+          if (X._data[k] > 0)
+            X.grad->_data[k] += d_out._data[k];
+        }
+      }
+    } else if (op == "softmax") {
+      Tensor &X = *parents[0];
+      Tensor &Y = *node;
+      if (X.requires_grad) {
+        if (!X.grad)
+          X.grad = new Tensor(X._shape);
+        int dim = node->stride; // Recovered dim
+        int dim_size = Y._shape[dim];
+        int stride_after = 1;
+        for (int i = dim + 1; i < (int)Y._shape.size(); ++i)
+          stride_after *= Y._shape[i];
+        int stride_before = Y.numel() / (dim_size * stride_after);
+
+        for (int b = 0; b < stride_before; ++b) {
+          for (int a = 0; a < stride_after; ++a) {
+            size_t base_idx = b * dim_size * stride_after + a;
+            // Compute sum(y_i * dy_i)
+            float sum_y_dy = 0.0f;
+            for (int i = 0; i < dim_size; ++i) {
+              size_t idx = base_idx + i * stride_after;
+              sum_y_dy += Y._data[idx] * d_out._data[idx];
+            }
+            // dx_j = y_j * (dy_j - sum_y_dy)
+            for (int i = 0; i < dim_size; ++i) {
+              size_t idx = base_idx + i * stride_after;
+              X.grad->_data[idx] +=
+                  Y._data[idx] * (d_out._data[idx] - sum_y_dy);
+            }
+          }
+        }
       }
     } else if (op == "transpose") {
       Tensor &parent = *parents[0];
