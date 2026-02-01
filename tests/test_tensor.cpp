@@ -50,9 +50,36 @@ int main() {
   std::cout << "Conv2d test passed." << std::endl;
 
   // 4. Maxpool2d
-  dl::Tensor pool_out = input.maxpool2d(2, 1);
+  dl::Tensor input_pool({1, 1, 4, 4});
+  for (int i = 0; i < 4; ++i)
+    for (int j = 0; j < 4; ++j)
+      input_pool({0, 0, i, j}) = (float)(i * 4 + j);
+  // Input:
+  // 0  1  2  3
+  // 4  5  6  7
+  // 8  9  10 11
+  // 12 13 14 15
+
+  input_pool.requires_grad = true;
+  dl::Tensor pool_out = input_pool.maxpool2d(2, 2);
+  // Pool out (2x2):
+  // 5  7
+  // 13 15
   assert(pool_out.size()[2] == 2);
-  assert(pool_out({0, 0, 0, 0}) == 1.0f);
+  assert(pool_out({0, 0, 0, 0}) == 5.0f);
+  assert(pool_out({0, 0, 1, 1}) == 15.0f);
+
+  dl::Tensor pool_loss = pool_out.sum();
+  pool_loss.backward();
+
+  // Gradients should be 1.0 only at positions [0,0,1,1], [0,0,1,3], [0,0,3,1],
+  // [0,0,3,3] which correspond to 5, 7, 13, 15
+  assert(input_pool.grad->operator()({0, 0, 1, 1}) == 1.0f);
+  assert(input_pool.grad->operator()({0, 0, 1, 3}) == 1.0f);
+  assert(input_pool.grad->operator()({0, 0, 3, 1}) == 1.0f);
+  assert(input_pool.grad->operator()({0, 0, 3, 3}) == 1.0f);
+  assert(input_pool.grad->operator()({0, 0, 0, 0}) == 0.0f);
+
   std::cout << "Maxpool2d test passed." << std::endl;
 
   // 5. Graph metadata and backward

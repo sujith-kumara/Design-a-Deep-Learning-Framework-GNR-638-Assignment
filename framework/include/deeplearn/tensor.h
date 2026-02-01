@@ -56,6 +56,7 @@ public:
 private:
   std::vector<float> _data;
   std::vector<int> _shape;
+  std::vector<size_t> _max_indices; // Added for maxpool backward
 
   size_t get_flat_index(const std::vector<int> &indices) const;
 };

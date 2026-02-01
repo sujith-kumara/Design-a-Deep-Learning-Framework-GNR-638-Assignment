@@ -344,20 +344,31 @@ Tensor Tensor::maxpool2d(int kernel_size, int stride) const {
   int Wout = (W - kernel_size) / stride + 1;
 
   Tensor res({B, C, Hout, Wout});
+  if (this->requires_grad)
+    res._max_indices.resize(res.numel());
 
   for (int b = 0; b < B; ++b) {
     for (int c = 0; c < C; ++c) {
       for (int h = 0; h < Hout; ++h) {
         for (int w = 0; w < Wout; ++w) {
-          float max_val = -1e30f; // Very small value
+          float max_val = -1e30f;
+          size_t max_idx = 0;
           for (int kh = 0; kh < kernel_size; ++kh) {
             for (int kw = 0; kw < kernel_size; ++kw) {
               int ih = h * stride + kh;
               int iw = w * stride + kw;
-              max_val = std::max(max_val, (*this)({b, c, ih, iw}));
+              size_t curr_idx = get_flat_index({b, c, ih, iw});
+              float curr_val = _data[curr_idx];
+              if (curr_val > max_val) {
+                max_val = curr_val;
+                max_idx = curr_idx;
+              }
             }
           }
-          res({b, c, h, w}) = max_val;
+          size_t out_idx = res.get_flat_index({b, c, h, w});
+          res._data[out_idx] = max_val;
+          if (this->requires_grad)
+            res._max_indices[out_idx] = max_idx;
         }
       }
     }
@@ -572,34 +583,14 @@ void Tensor::backward() {
       }
     } else if (op == "maxpool2d") {
       Tensor &X = *parents[0];
-      int B = X._shape[0], C = X._shape[1], H = X._shape[2], W = X._shape[3];
-      int s = node->stride, k = node->kernel_size;
-      int Hout = (H - k) / s + 1;
-      int Wout = (W - k) / s + 1;
-
       if (X.requires_grad) {
         if (!X.grad)
           X.grad = new Tensor(X._shape);
-        for (int b = 0; b < B; ++b)
-          for (int c = 0; c < C; ++c)
-            for (int h = 0; h < Hout; ++h)
-              for (int w = 0; w < Wout; ++w) {
-                float max_val = -1e30f;
-                int max_h = -1, max_w = -1;
-                for (int kh = 0; kh < k; ++kh)
-                  for (int kw = 0; kw < k; ++kw) {
-                    int ih = h * s + kh;
-                    int iw = w * s + kw;
-                    if (X({b, c, ih, iw}) > max_val) {
-                      max_val = X({b, c, ih, iw});
-                      max_h = ih;
-                      max_w = iw;
-                    }
-                  }
-                if (max_h != -1)
-                  X.grad->operator()({b, c, max_h, max_w}) +=
-                      d_out({b, c, h, w});
-              }
+        // Use stored indices for routing gradients
+        for (size_t i = 0; i < node->numel(); ++i) {
+          size_t max_idx = node->_max_indices[i];
+          X.grad->_data[max_idx] += d_out._data[i];
+        }
       }
     } else if (op == "relu") {
       Tensor &X = *parents[0];
