@@ -15,4 +15,4 @@ add_library(deeplearn
 
 # Subdirectories
 add_subdirectory(tests)
-# add_subdirectory(bindings)
+add_subdirectory(bindings)

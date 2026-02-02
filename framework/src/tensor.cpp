@@ -23,7 +23,71 @@ Tensor::Tensor(const std::vector<int> &shape, const std::vector<float> &data)
 }
 
 Tensor::~Tensor() {
-  // Note: grad ownership should be handled carefully later in autograd
+  if (grad) {
+    delete grad;
+    grad = nullptr;
+  }
+}
+
+// Copy constructor: deep copy of data, but don't copy the grad pointer or
+// parents
+Tensor::Tensor(const Tensor &other)
+    : _data(other._data), _shape(other._shape),
+      _max_indices(other._max_indices), requires_grad(other.requires_grad),
+      grad(nullptr), op_type(other.op_type), stride(other.stride),
+      padding(other.padding), kernel_size(other.kernel_size) {
+  // We explicitly don't copy parents or grad to avoid graph corruption during
+  // simple copies
+}
+
+// Copy assignment
+Tensor &Tensor::operator=(const Tensor &other) {
+  if (this != &other) {
+    if (grad)
+      delete grad;
+    _data = other._data;
+    _shape = other._shape;
+    _max_indices = other._max_indices;
+    requires_grad = other.requires_grad;
+    grad = nullptr;
+    parents.clear(); // Clear graph structure on assignment
+    op_type = other.op_type;
+    stride = other.stride;
+    padding = other.padding;
+    kernel_size = other.kernel_size;
+  }
+  return *this;
+}
+
+// Move constructor
+Tensor::Tensor(Tensor &&other) noexcept
+    : _data(std::move(other._data)), _shape(std::move(other._shape)),
+      _max_indices(std::move(other._max_indices)),
+      requires_grad(other.requires_grad), grad(other.grad),
+      parents(std::move(other.parents)), op_type(std::move(other.op_type)),
+      stride(other.stride), padding(other.padding),
+      kernel_size(other.kernel_size) {
+  other.grad = nullptr;
+}
+
+// Move assignment
+Tensor &Tensor::operator=(Tensor &&other) noexcept {
+  if (this != &other) {
+    if (grad)
+      delete grad;
+    _data = std::move(other._data);
+    _shape = std::move(other._shape);
+    _max_indices = std::move(other._max_indices);
+    requires_grad = other.requires_grad;
+    grad = other.grad;
+    parents = std::move(other.parents);
+    op_type = std::move(other.op_type);
+    stride = other.stride;
+    padding = other.padding;
+    kernel_size = other.kernel_size;
+    other.grad = nullptr;
+  }
+  return *this;
 }
 
 size_t Tensor::numel() const {

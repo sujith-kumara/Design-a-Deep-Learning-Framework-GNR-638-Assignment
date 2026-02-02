@@ -17,6 +17,12 @@ public:
   Tensor(const std::vector<int> &shape, const std::vector<float> &data);
   ~Tensor();
 
+  // Copy/Move semantics
+  Tensor(const Tensor &other);
+  Tensor &operator=(const Tensor &other);
+  Tensor(Tensor &&other) noexcept;
+  Tensor &operator=(Tensor &&other) noexcept;
+
   // Helper methods
   const std::vector<int> &size() const { return _shape; }
   size_t numel() const;
@@ -42,6 +48,10 @@ public:
   Tensor maxpool2d(int kernel_size, int stride = 1) const;
 
   const std::vector<int> &shape() const { return _shape; } // Added
+
+  // Data access (for Python bindings and serialization)
+  const std::vector<float> &data() const { return _data; }
+  std::vector<float> &data() { return _data; }
 
   // Indexing helpers
   float &operator()(const std::vector<int> &indices);

@@ -83,7 +83,9 @@ int main() {
   w2({2, 0}) = 1.5f;
 
   delete w1.grad;
+  w1.grad = nullptr;
   delete w2.grad;
+  w2.grad = nullptr;
 
   w1.grad = new Tensor(w1.shape());
   w1.grad->operator()({0, 0}) = 0.1f;
