@@ -3,13 +3,8 @@
 ## Overview
 This implementation provides a **Stochastic Gradient Descent (SGD)** optimizer with optional momentum support for training neural networks in the DeepLearn framework.
 
-## Features
-- ✅ Basic SGD with configurable learning rate
-- ✅ Momentum support for accelerated convergence
-- ✅ Batch parameter updates
-- ✅ Gradient zeroing functionality
 
-## Usage
+
 
 ### Basic SGD (without momentum)
 ```cpp
