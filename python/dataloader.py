@@ -24,14 +24,14 @@ class DataLoader:
         self.shuffle = shuffle
         
         # Discover classes and images
-        self.classes = sorted([d for d in os.listdir(root_dir) if os.path.isdir(os.path.join(root_dir, d))])
+        self.classes = sorted([d for d in os.listdir(root_dir) if os.path.isdir(os.path.join(root_dir, d)) and not d.startswith('.')])
         self.class_to_idx = {cls_name: i for i, cls_name in enumerate(self.classes)}
         
         self.samples = []
         for cls_name in self.classes:
             cls_dir = os.path.join(root_dir, cls_name)
             for f in os.listdir(cls_dir):
-                if f.lower().endswith('.png'):
+                if f.lower().endswith('.png') and not f.startswith('.'):
                     self.samples.append((os.path.join(cls_dir, f), self.class_to_idx[cls_name]))
         
         if not self.samples:
@@ -62,6 +62,9 @@ class DataLoader:
                 img = cv2.imread(img_path)
                 if img is None:
                     continue
+                
+                # Convert BGR to RGB
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                 
                 # Resize
                 img = cv2.resize(img, self.target_size)

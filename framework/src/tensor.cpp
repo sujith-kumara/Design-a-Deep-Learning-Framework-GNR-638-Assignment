@@ -29,16 +29,13 @@ Tensor::~Tensor() {
   }
 }
 
-// Copy constructor: deep copy of data, but don't copy the grad pointer or
-// parents
+// Copy constructor
 Tensor::Tensor(const Tensor &other)
     : _data(other._data), _shape(other._shape),
       _max_indices(other._max_indices), requires_grad(other.requires_grad),
-      grad(nullptr), op_type(other.op_type), stride(other.stride),
-      padding(other.padding), kernel_size(other.kernel_size) {
-  // We explicitly don't copy parents or grad to avoid graph corruption during
-  // simple copies
-}
+      grad(other.grad ? new Tensor(*other.grad) : nullptr),
+      parents(other.parents), op_type(other.op_type), stride(other.stride),
+      padding(other.padding), kernel_size(other.kernel_size) {}
 
 // Copy assignment
 Tensor &Tensor::operator=(const Tensor &other) {
@@ -49,8 +46,8 @@ Tensor &Tensor::operator=(const Tensor &other) {
     _shape = other._shape;
     _max_indices = other._max_indices;
     requires_grad = other.requires_grad;
-    grad = nullptr;
-    parents.clear(); // Clear graph structure on assignment
+    grad = (other.grad) ? new Tensor(*other.grad) : nullptr;
+    parents = other.parents;
     op_type = other.op_type;
     stride = other.stride;
     padding = other.padding;

@@ -1,0 +1,25 @@
+# Build artifacts
+build/
+bin/
+lib/
+*.a
+*.so
+*.dylib
+*.exe
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

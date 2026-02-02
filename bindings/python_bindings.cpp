@@ -105,32 +105,40 @@ PYBIND11_MODULE(deeplearn, m) {
            "Reshape tensor")
 
       // Mathematical operations
-      .def("add", &dl::Tensor::add, py::arg("other"), "Element-wise addition")
-      .def("sub", &dl::Tensor::sub, py::arg("other"),
-           "Element-wise subtraction")
-      .def("mul", &dl::Tensor::mul, py::arg("other"),
-           "Element-wise multiplication")
+      .def("add", &dl::Tensor::add, py::arg("other"), py::keep_alive<0, 1>(),
+           py::keep_alive<0, 2>(), "Element-wise addition")
+      .def("sub", &dl::Tensor::sub, py::arg("other"), py::keep_alive<0, 1>(),
+           py::keep_alive<0, 2>(), "Element-wise subtraction")
+      .def("mul", &dl::Tensor::mul, py::arg("other"), py::keep_alive<0, 1>(),
+           py::keep_alive<0, 2>(), "Element-wise multiplication")
       .def("matmul", &dl::Tensor::matmul, py::arg("other"),
+           py::keep_alive<0, 1>(), py::keep_alive<0, 2>(),
            "Matrix multiplication")
-      .def("transpose", &dl::Tensor::transpose, "Transpose (2D only)")
-      .def("sum", &dl::Tensor::sum, "Sum all elements")
+      .def("transpose", &dl::Tensor::transpose, py::keep_alive<0, 1>(),
+           "Transpose (2D only)")
+      .def("sum", &dl::Tensor::sum, py::keep_alive<0, 1>(), "Sum all elements")
 
       // Operators
-      .def("__add__", &dl::Tensor::add)
-      .def("__sub__", &dl::Tensor::sub)
-      .def("__mul__", &dl::Tensor::mul)
-      .def("__matmul__", &dl::Tensor::matmul)
+      .def("__add__", &dl::Tensor::add, py::keep_alive<0, 1>(),
+           py::keep_alive<0, 2>())
+      .def("__sub__", &dl::Tensor::sub, py::keep_alive<0, 1>(),
+           py::keep_alive<0, 2>())
+      .def("__mul__", &dl::Tensor::mul, py::keep_alive<0, 1>(),
+           py::keep_alive<0, 2>())
+      .def("__matmul__", &dl::Tensor::matmul, py::keep_alive<0, 1>(),
+           py::keep_alive<0, 2>())
 
       // Neural network operations
-      .def("relu", &dl::Tensor::relu, "ReLU activation")
+      .def("relu", &dl::Tensor::relu, py::keep_alive<0, 1>(), "ReLU activation")
       .def("softmax", &dl::Tensor::softmax, py::arg("dim") = -1,
-           "Softmax activation")
+           py::keep_alive<0, 1>(), "Softmax activation")
       .def("cross_entropy", &dl::Tensor::cross_entropy, py::arg("target"),
-           "Cross entropy loss")
+           py::keep_alive<0, 1>(), py::keep_alive<0, 2>(), "Cross entropy loss")
       .def("conv2d", &dl::Tensor::conv2d, py::arg("kernel"),
-           py::arg("stride") = 1, py::arg("padding") = 0, "2D convolution")
+           py::arg("stride") = 1, py::arg("padding") = 0,
+           py::keep_alive<0, 1>(), py::keep_alive<0, 2>(), "2D convolution")
       .def("maxpool2d", &dl::Tensor::maxpool2d, py::arg("kernel_size"),
-           py::arg("stride") = 1, "2D max pooling")
+           py::arg("stride") = 1, py::keep_alive<0, 1>(), "2D max pooling")
 
       // Autograd
       .def("backward", &dl::Tensor::backward,
@@ -155,8 +163,10 @@ PYBIND11_MODULE(deeplearn, m) {
   py::class_<dl::Linear>(m, "Linear")
       .def(py::init<int, int>(), py::arg("in_features"),
            py::arg("out_features"), "Linear (fully connected) layer")
-      .def("forward", &dl::Linear::forward, py::arg("input"), "Forward pass")
+      .def("forward", &dl::Linear::forward, py::arg("input"),
+           py::keep_alive<0, 1>(), py::keep_alive<0, 2>(), "Forward pass")
       .def("__call__", &dl::Linear::forward, py::arg("input"),
+           py::keep_alive<0, 1>(), py::keep_alive<0, 2>(),
            "Forward pass (callable)")
       .def_property(
           "W", [](dl::Linear &l) { return &l.W; },
@@ -180,8 +190,10 @@ PYBIND11_MODULE(deeplearn, m) {
            py::arg("out_channels"), py::arg("kernel_size"),
            py::arg("stride") = 1, py::arg("padding") = 0,
            "2D Convolutional layer")
-      .def("forward", &dl::Conv2D::forward, py::arg("input"), "Forward pass")
+      .def("forward", &dl::Conv2D::forward, py::arg("input"),
+           py::keep_alive<0, 1>(), py::keep_alive<0, 2>(), "Forward pass")
       .def("__call__", &dl::Conv2D::forward, py::arg("input"),
+           py::keep_alive<0, 1>(), py::keep_alive<0, 2>(),
            "Forward pass (callable)")
       .def_property(
           "W", [](dl::Conv2D &l) { return &l.W; },
@@ -216,7 +228,9 @@ PYBIND11_MODULE(deeplearn, m) {
           "__call__",
           [](dl::CrossEntropyLoss &loss, const dl::Tensor &logits,
              const dl::Tensor &targets) { return loss(logits, targets); },
-          py::arg("logits"), py::arg("targets"), "Compute cross entropy loss");
+          py::arg("logits"), py::arg("targets"), py::keep_alive<0, 1>(),
+          py::keep_alive<0, 2>(), py::keep_alive<0, 3>(),
+          "Compute cross entropy loss");
 
   // ==================== Utility Functions ====================
   m.def("from_numpy", &dl::tensor_from_numpy, py::arg("array"),
