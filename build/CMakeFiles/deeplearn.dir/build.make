@@ -100,19 +100,35 @@ CMakeFiles/deeplearn.dir/framework/src/layers.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/deeplearn.dir/framework/src/layers.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/sujith/Desktop/IITB/assignment_github_folder/framework/src/layers.cpp -o CMakeFiles/deeplearn.dir/framework/src/layers.cpp.s
 
+CMakeFiles/deeplearn.dir/framework/src/optim.cpp.o: CMakeFiles/deeplearn.dir/flags.make
+CMakeFiles/deeplearn.dir/framework/src/optim.cpp.o: /Users/sujith/Desktop/IITB/assignment_github_folder/framework/src/optim.cpp
+CMakeFiles/deeplearn.dir/framework/src/optim.cpp.o: CMakeFiles/deeplearn.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/deeplearn.dir/framework/src/optim.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/deeplearn.dir/framework/src/optim.cpp.o -MF CMakeFiles/deeplearn.dir/framework/src/optim.cpp.o.d -o CMakeFiles/deeplearn.dir/framework/src/optim.cpp.o -c /Users/sujith/Desktop/IITB/assignment_github_folder/framework/src/optim.cpp
+
+CMakeFiles/deeplearn.dir/framework/src/optim.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/deeplearn.dir/framework/src/optim.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/sujith/Desktop/IITB/assignment_github_folder/framework/src/optim.cpp > CMakeFiles/deeplearn.dir/framework/src/optim.cpp.i
+
+CMakeFiles/deeplearn.dir/framework/src/optim.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/deeplearn.dir/framework/src/optim.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/sujith/Desktop/IITB/assignment_github_folder/framework/src/optim.cpp -o CMakeFiles/deeplearn.dir/framework/src/optim.cpp.s
+
 # Object files for target deeplearn
 deeplearn_OBJECTS = \
 "CMakeFiles/deeplearn.dir/framework/src/tensor.cpp.o" \
-"CMakeFiles/deeplearn.dir/framework/src/layers.cpp.o"
+"CMakeFiles/deeplearn.dir/framework/src/layers.cpp.o" \
+"CMakeFiles/deeplearn.dir/framework/src/optim.cpp.o"
 
 # External object files for target deeplearn
 deeplearn_EXTERNAL_OBJECTS =
 
 libdeeplearn.a: CMakeFiles/deeplearn.dir/framework/src/tensor.cpp.o
 libdeeplearn.a: CMakeFiles/deeplearn.dir/framework/src/layers.cpp.o
+libdeeplearn.a: CMakeFiles/deeplearn.dir/framework/src/optim.cpp.o
 libdeeplearn.a: CMakeFiles/deeplearn.dir/build.make
 libdeeplearn.a: CMakeFiles/deeplearn.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX static library libdeeplearn.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX static library libdeeplearn.a"
 	$(CMAKE_COMMAND) -P CMakeFiles/deeplearn.dir/cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/deeplearn.dir/link.txt --verbose=$(VERBOSE)
 

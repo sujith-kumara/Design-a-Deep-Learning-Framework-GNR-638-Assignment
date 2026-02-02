@@ -87,11 +87,15 @@ clean: tests/clean
 # Recursive "all" directory target.
 tests/all: tests/CMakeFiles/test_tensor.dir/all
 tests/all: tests/CMakeFiles/test_layer.dir/all
+tests/all: tests/CMakeFiles/test_optim.dir/all
+tests/all: tests/CMakeFiles/example_sgd_training.dir/all
 .PHONY : tests/all
 
 # Recursive "codegen" directory target.
 tests/codegen: tests/CMakeFiles/test_tensor.dir/codegen
 tests/codegen: tests/CMakeFiles/test_layer.dir/codegen
+tests/codegen: tests/CMakeFiles/test_optim.dir/codegen
+tests/codegen: tests/CMakeFiles/example_sgd_training.dir/codegen
 .PHONY : tests/codegen
 
 # Recursive "preinstall" directory target.
@@ -101,6 +105,8 @@ tests/preinstall:
 # Recursive "clean" directory target.
 tests/clean: tests/CMakeFiles/test_tensor.dir/clean
 tests/clean: tests/CMakeFiles/test_layer.dir/clean
+tests/clean: tests/CMakeFiles/test_optim.dir/clean
+tests/clean: tests/CMakeFiles/example_sgd_training.dir/clean
 .PHONY : tests/clean
 
 #=============================================================================
@@ -110,12 +116,12 @@ tests/clean: tests/CMakeFiles/test_layer.dir/clean
 CMakeFiles/deeplearn.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/deeplearn.dir/build.make CMakeFiles/deeplearn.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/deeplearn.dir/build.make CMakeFiles/deeplearn.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles --progress-num=1,2,3 "Built target deeplearn"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles --progress-num=1,2,3,4 "Built target deeplearn"
 .PHONY : CMakeFiles/deeplearn.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/deeplearn.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles 3
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles 4
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/deeplearn.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles 0
 .PHONY : CMakeFiles/deeplearn.dir/rule
@@ -127,7 +133,7 @@ deeplearn: CMakeFiles/deeplearn.dir/rule
 # codegen rule for target.
 CMakeFiles/deeplearn.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/deeplearn.dir/build.make CMakeFiles/deeplearn.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles --progress-num=1,2,3 "Finished codegen for target deeplearn"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles --progress-num=1,2,3,4 "Finished codegen for target deeplearn"
 .PHONY : CMakeFiles/deeplearn.dir/codegen
 
 # clean rule for target.
@@ -142,12 +148,12 @@ CMakeFiles/deeplearn.dir/clean:
 tests/CMakeFiles/test_tensor.dir/all: CMakeFiles/deeplearn.dir/all
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_tensor.dir/build.make tests/CMakeFiles/test_tensor.dir/depend
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_tensor.dir/build.make tests/CMakeFiles/test_tensor.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles --progress-num=6,7 "Built target test_tensor"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles --progress-num=11,12 "Built target test_tensor"
 .PHONY : tests/CMakeFiles/test_tensor.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_tensor.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles 5
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles 6
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_tensor.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_tensor.dir/rule
@@ -159,7 +165,7 @@ test_tensor: tests/CMakeFiles/test_tensor.dir/rule
 # codegen rule for target.
 tests/CMakeFiles/test_tensor.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_tensor.dir/build.make tests/CMakeFiles/test_tensor.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles --progress-num=6,7 "Finished codegen for target test_tensor"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles --progress-num=11,12 "Finished codegen for target test_tensor"
 .PHONY : tests/CMakeFiles/test_tensor.dir/codegen
 
 # clean rule for target.
@@ -174,12 +180,12 @@ tests/CMakeFiles/test_tensor.dir/clean:
 tests/CMakeFiles/test_layer.dir/all: CMakeFiles/deeplearn.dir/all
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_layer.dir/build.make tests/CMakeFiles/test_layer.dir/depend
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_layer.dir/build.make tests/CMakeFiles/test_layer.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles --progress-num=4,5 "Built target test_layer"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles --progress-num=7,8 "Built target test_layer"
 .PHONY : tests/CMakeFiles/test_layer.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_layer.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles 5
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles 6
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_layer.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_layer.dir/rule
@@ -191,13 +197,77 @@ test_layer: tests/CMakeFiles/test_layer.dir/rule
 # codegen rule for target.
 tests/CMakeFiles/test_layer.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_layer.dir/build.make tests/CMakeFiles/test_layer.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles --progress-num=4,5 "Finished codegen for target test_layer"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles --progress-num=7,8 "Finished codegen for target test_layer"
 .PHONY : tests/CMakeFiles/test_layer.dir/codegen
 
 # clean rule for target.
 tests/CMakeFiles/test_layer.dir/clean:
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_layer.dir/build.make tests/CMakeFiles/test_layer.dir/clean
 .PHONY : tests/CMakeFiles/test_layer.dir/clean
+
+#=============================================================================
+# Target rules for target tests/CMakeFiles/test_optim.dir
+
+# All Build rule for target.
+tests/CMakeFiles/test_optim.dir/all: CMakeFiles/deeplearn.dir/all
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_optim.dir/build.make tests/CMakeFiles/test_optim.dir/depend
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_optim.dir/build.make tests/CMakeFiles/test_optim.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles --progress-num=9,10 "Built target test_optim"
+.PHONY : tests/CMakeFiles/test_optim.dir/all
+
+# Build rule for subdir invocation for target.
+tests/CMakeFiles/test_optim.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles 6
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_optim.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles 0
+.PHONY : tests/CMakeFiles/test_optim.dir/rule
+
+# Convenience name for target.
+test_optim: tests/CMakeFiles/test_optim.dir/rule
+.PHONY : test_optim
+
+# codegen rule for target.
+tests/CMakeFiles/test_optim.dir/codegen:
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_optim.dir/build.make tests/CMakeFiles/test_optim.dir/codegen
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles --progress-num=9,10 "Finished codegen for target test_optim"
+.PHONY : tests/CMakeFiles/test_optim.dir/codegen
+
+# clean rule for target.
+tests/CMakeFiles/test_optim.dir/clean:
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_optim.dir/build.make tests/CMakeFiles/test_optim.dir/clean
+.PHONY : tests/CMakeFiles/test_optim.dir/clean
+
+#=============================================================================
+# Target rules for target tests/CMakeFiles/example_sgd_training.dir
+
+# All Build rule for target.
+tests/CMakeFiles/example_sgd_training.dir/all: CMakeFiles/deeplearn.dir/all
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/example_sgd_training.dir/build.make tests/CMakeFiles/example_sgd_training.dir/depend
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/example_sgd_training.dir/build.make tests/CMakeFiles/example_sgd_training.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles --progress-num=5,6 "Built target example_sgd_training"
+.PHONY : tests/CMakeFiles/example_sgd_training.dir/all
+
+# Build rule for subdir invocation for target.
+tests/CMakeFiles/example_sgd_training.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles 6
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/example_sgd_training.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles 0
+.PHONY : tests/CMakeFiles/example_sgd_training.dir/rule
+
+# Convenience name for target.
+example_sgd_training: tests/CMakeFiles/example_sgd_training.dir/rule
+.PHONY : example_sgd_training
+
+# codegen rule for target.
+tests/CMakeFiles/example_sgd_training.dir/codegen:
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/example_sgd_training.dir/build.make tests/CMakeFiles/example_sgd_training.dir/codegen
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/sujith/Desktop/IITB/assignment_github_folder/build/CMakeFiles --progress-num=5,6 "Finished codegen for target example_sgd_training"
+.PHONY : tests/CMakeFiles/example_sgd_training.dir/codegen
+
+# clean rule for target.
+tests/CMakeFiles/example_sgd_training.dir/clean:
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/example_sgd_training.dir/build.make tests/CMakeFiles/example_sgd_training.dir/clean
+.PHONY : tests/CMakeFiles/example_sgd_training.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

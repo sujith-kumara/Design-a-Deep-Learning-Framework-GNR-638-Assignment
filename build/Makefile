@@ -155,6 +155,32 @@ test_layer/fast:
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_layer.dir/build.make tests/CMakeFiles/test_layer.dir/build
 .PHONY : test_layer/fast
 
+#=============================================================================
+# Target rules for targets named test_optim
+
+# Build rule for target.
+test_optim: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_optim
+.PHONY : test_optim
+
+# fast build rule for target.
+test_optim/fast:
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_optim.dir/build.make tests/CMakeFiles/test_optim.dir/build
+.PHONY : test_optim/fast
+
+#=============================================================================
+# Target rules for targets named example_sgd_training
+
+# Build rule for target.
+example_sgd_training: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 example_sgd_training
+.PHONY : example_sgd_training
+
+# fast build rule for target.
+example_sgd_training/fast:
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/example_sgd_training.dir/build.make tests/CMakeFiles/example_sgd_training.dir/build
+.PHONY : example_sgd_training/fast
+
 framework/src/layers.o: framework/src/layers.cpp.o
 .PHONY : framework/src/layers.o
 
@@ -178,6 +204,30 @@ framework/src/layers.s: framework/src/layers.cpp.s
 framework/src/layers.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/deeplearn.dir/build.make CMakeFiles/deeplearn.dir/framework/src/layers.cpp.s
 .PHONY : framework/src/layers.cpp.s
+
+framework/src/optim.o: framework/src/optim.cpp.o
+.PHONY : framework/src/optim.o
+
+# target to build an object file
+framework/src/optim.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/deeplearn.dir/build.make CMakeFiles/deeplearn.dir/framework/src/optim.cpp.o
+.PHONY : framework/src/optim.cpp.o
+
+framework/src/optim.i: framework/src/optim.cpp.i
+.PHONY : framework/src/optim.i
+
+# target to preprocess a source file
+framework/src/optim.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/deeplearn.dir/build.make CMakeFiles/deeplearn.dir/framework/src/optim.cpp.i
+.PHONY : framework/src/optim.cpp.i
+
+framework/src/optim.s: framework/src/optim.cpp.s
+.PHONY : framework/src/optim.s
+
+# target to generate assembly for a file
+framework/src/optim.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/deeplearn.dir/build.make CMakeFiles/deeplearn.dir/framework/src/optim.cpp.s
+.PHONY : framework/src/optim.cpp.s
 
 framework/src/tensor.o: framework/src/tensor.cpp.o
 .PHONY : framework/src/tensor.o
@@ -212,11 +262,16 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... deeplearn"
+	@echo "... example_sgd_training"
 	@echo "... test_layer"
+	@echo "... test_optim"
 	@echo "... test_tensor"
 	@echo "... framework/src/layers.o"
 	@echo "... framework/src/layers.i"
 	@echo "... framework/src/layers.s"
+	@echo "... framework/src/optim.o"
+	@echo "... framework/src/optim.i"
+	@echo "... framework/src/optim.s"
 	@echo "... framework/src/tensor.o"
 	@echo "... framework/src/tensor.i"
 	@echo "... framework/src/tensor.s"

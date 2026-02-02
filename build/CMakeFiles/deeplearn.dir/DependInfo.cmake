@@ -9,6 +9,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/Users/sujith/Desktop/IITB/assignment_github_folder/framework/src/layers.cpp" "CMakeFiles/deeplearn.dir/framework/src/layers.cpp.o" "gcc" "CMakeFiles/deeplearn.dir/framework/src/layers.cpp.o.d"
+  "/Users/sujith/Desktop/IITB/assignment_github_folder/framework/src/optim.cpp" "CMakeFiles/deeplearn.dir/framework/src/optim.cpp.o" "gcc" "CMakeFiles/deeplearn.dir/framework/src/optim.cpp.o.d"
   "/Users/sujith/Desktop/IITB/assignment_github_folder/framework/src/tensor.cpp" "CMakeFiles/deeplearn.dir/framework/src/tensor.cpp.o" "gcc" "CMakeFiles/deeplearn.dir/framework/src/tensor.cpp.o.d"
   )
 

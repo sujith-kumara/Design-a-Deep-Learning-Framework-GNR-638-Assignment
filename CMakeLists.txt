@@ -10,6 +10,7 @@ include_directories(framework/include)
 add_library(deeplearn 
     framework/src/tensor.cpp
     framework/src/layers.cpp
+    framework/src/optim.cpp
 )
 
 # Subdirectories

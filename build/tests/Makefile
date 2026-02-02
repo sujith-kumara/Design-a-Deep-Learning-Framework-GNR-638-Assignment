@@ -144,6 +144,58 @@ test_layer/fast:
 	cd /Users/sujith/Desktop/IITB/assignment_github_folder/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_layer.dir/build.make tests/CMakeFiles/test_layer.dir/build
 .PHONY : test_layer/fast
 
+# Convenience name for target.
+tests/CMakeFiles/test_optim.dir/rule:
+	cd /Users/sujith/Desktop/IITB/assignment_github_folder/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_optim.dir/rule
+.PHONY : tests/CMakeFiles/test_optim.dir/rule
+
+# Convenience name for target.
+test_optim: tests/CMakeFiles/test_optim.dir/rule
+.PHONY : test_optim
+
+# fast build rule for target.
+test_optim/fast:
+	cd /Users/sujith/Desktop/IITB/assignment_github_folder/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_optim.dir/build.make tests/CMakeFiles/test_optim.dir/build
+.PHONY : test_optim/fast
+
+# Convenience name for target.
+tests/CMakeFiles/example_sgd_training.dir/rule:
+	cd /Users/sujith/Desktop/IITB/assignment_github_folder/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/example_sgd_training.dir/rule
+.PHONY : tests/CMakeFiles/example_sgd_training.dir/rule
+
+# Convenience name for target.
+example_sgd_training: tests/CMakeFiles/example_sgd_training.dir/rule
+.PHONY : example_sgd_training
+
+# fast build rule for target.
+example_sgd_training/fast:
+	cd /Users/sujith/Desktop/IITB/assignment_github_folder/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/example_sgd_training.dir/build.make tests/CMakeFiles/example_sgd_training.dir/build
+.PHONY : example_sgd_training/fast
+
+example_sgd_training.o: example_sgd_training.cpp.o
+.PHONY : example_sgd_training.o
+
+# target to build an object file
+example_sgd_training.cpp.o:
+	cd /Users/sujith/Desktop/IITB/assignment_github_folder/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/example_sgd_training.dir/build.make tests/CMakeFiles/example_sgd_training.dir/example_sgd_training.cpp.o
+.PHONY : example_sgd_training.cpp.o
+
+example_sgd_training.i: example_sgd_training.cpp.i
+.PHONY : example_sgd_training.i
+
+# target to preprocess a source file
+example_sgd_training.cpp.i:
+	cd /Users/sujith/Desktop/IITB/assignment_github_folder/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/example_sgd_training.dir/build.make tests/CMakeFiles/example_sgd_training.dir/example_sgd_training.cpp.i
+.PHONY : example_sgd_training.cpp.i
+
+example_sgd_training.s: example_sgd_training.cpp.s
+.PHONY : example_sgd_training.s
+
+# target to generate assembly for a file
+example_sgd_training.cpp.s:
+	cd /Users/sujith/Desktop/IITB/assignment_github_folder/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/example_sgd_training.dir/build.make tests/CMakeFiles/example_sgd_training.dir/example_sgd_training.cpp.s
+.PHONY : example_sgd_training.cpp.s
+
 test_layer.o: test_layer.cpp.o
 .PHONY : test_layer.o
 
@@ -167,6 +219,30 @@ test_layer.s: test_layer.cpp.s
 test_layer.cpp.s:
 	cd /Users/sujith/Desktop/IITB/assignment_github_folder/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_layer.dir/build.make tests/CMakeFiles/test_layer.dir/test_layer.cpp.s
 .PHONY : test_layer.cpp.s
+
+test_optim.o: test_optim.cpp.o
+.PHONY : test_optim.o
+
+# target to build an object file
+test_optim.cpp.o:
+	cd /Users/sujith/Desktop/IITB/assignment_github_folder/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_optim.dir/build.make tests/CMakeFiles/test_optim.dir/test_optim.cpp.o
+.PHONY : test_optim.cpp.o
+
+test_optim.i: test_optim.cpp.i
+.PHONY : test_optim.i
+
+# target to preprocess a source file
+test_optim.cpp.i:
+	cd /Users/sujith/Desktop/IITB/assignment_github_folder/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_optim.dir/build.make tests/CMakeFiles/test_optim.dir/test_optim.cpp.i
+.PHONY : test_optim.cpp.i
+
+test_optim.s: test_optim.cpp.s
+.PHONY : test_optim.s
+
+# target to generate assembly for a file
+test_optim.cpp.s:
+	cd /Users/sujith/Desktop/IITB/assignment_github_folder/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_optim.dir/build.make tests/CMakeFiles/test_optim.dir/test_optim.cpp.s
+.PHONY : test_optim.cpp.s
 
 test_tensor.o: test_tensor.cpp.o
 .PHONY : test_tensor.o
@@ -200,11 +276,19 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... example_sgd_training"
 	@echo "... test_layer"
+	@echo "... test_optim"
 	@echo "... test_tensor"
+	@echo "... example_sgd_training.o"
+	@echo "... example_sgd_training.i"
+	@echo "... example_sgd_training.s"
 	@echo "... test_layer.o"
 	@echo "... test_layer.i"
 	@echo "... test_layer.s"
+	@echo "... test_optim.o"
+	@echo "... test_optim.i"
+	@echo "... test_optim.s"
 	@echo "... test_tensor.o"
 	@echo "... test_tensor.i"
 	@echo "... test_tensor.s"

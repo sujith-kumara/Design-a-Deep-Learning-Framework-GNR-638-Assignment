@@ -8,6 +8,8 @@
 
 namespace dl {
 
+class SGD; // Forward declaration
+
 class Tensor {
 public:
   Tensor();
@@ -55,6 +57,7 @@ public:
   int kernel_size{0};
 
 private:
+  friend class SGD; // Allow SGD to access _data for optimization
   std::vector<float> _data;
   std::vector<int> _shape;
   std::vector<size_t> _max_indices; // Added for maxpool backward
