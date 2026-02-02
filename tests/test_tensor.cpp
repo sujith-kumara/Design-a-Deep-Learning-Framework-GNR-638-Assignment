@@ -1,5 +1,6 @@
-#include "deeplearn/tensor.h"
+#include "deeplearn/loss.h"
 #include <cassert>
+#include <cmath>
 #include <iostream>
 
 int main() {
@@ -158,6 +159,37 @@ int main() {
   assert(std::abs(x_sm.grad->operator()({0})) < 1e-5);
   assert(std::abs(x_sm.grad->operator()({1})) < 1e-5);
   std::cout << "Softmax test passed." << std::endl;
+
+  // 9. CrossEntropyLoss test
+  dl::Tensor logits({2, 3}, {2.0f, 0.5f, 1.0f, 1.0f, 3.0f, 0.2f});
+  dl::Tensor targets({2}, {0.0f, 1.0f}); // class 0 and class 1
+  logits.requires_grad = true;
+
+  dl::CrossEntropyLoss criterion;
+  dl::Tensor ce_loss = criterion(logits, targets);
+
+  // Manual check (approx):
+  // Exp: [e^2, e^0.5, e^1] = [7.389, 1.648, 2.718], Sum = 11.755
+  // Softmax0: [0.628, 0.140, 0.231]. -log(0.628) = 0.465
+  // Exp: [e^1, e^3, e^0.2] = [2.718, 20.085, 1.221], Sum = 24.024
+  // Softmax1: [0.113, 0.836, 0.051]. -log(0.836) = 0.179
+  // Avg Loss: (0.465 + 0.179) / 2 = 0.322
+  assert(std::abs(ce_loss({0}) - 0.3223f) < 1e-3);
+
+  ce_loss.backward();
+  // Grad check: (softmax - target) / N
+  // Grad0: ([0.628-1, 0.140, 0.231]) / 2 = [-0.186, 0.070, 0.115]
+  assert(std::abs(logits.grad->operator()({0, 0}) - (-0.1857f)) < 1e-3);
+  std::cout << "CrossEntropyLoss test passed." << std::endl;
+
+  // 10. Numerical Stability Test
+  dl::Tensor big_logits({1, 2}, {100.0f, 100.0f});
+  dl::Tensor big_targets({1}, {0.0f});
+  dl::Tensor stable_loss = criterion(big_logits, big_targets);
+  // -100 + log(e^100 + e^100) = -100 + log(2 * e^100) = -100 + log(2) + 100 =
+  // log(2) = 0.693
+  assert(std::abs(stable_loss({0}) - 0.693147f) < 1e-5);
+  std::cout << "Numerical stability test passed." << std::endl;
 
   std::cout << "All basic Tensor tests passed!" << std::endl;
   return 0;

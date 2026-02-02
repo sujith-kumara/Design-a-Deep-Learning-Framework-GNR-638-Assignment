@@ -276,6 +276,45 @@ Tensor Tensor::softmax(int dim) const {
   return res;
 }
 
+Tensor Tensor::cross_entropy(const Tensor &target) const {
+  if (_shape.size() != 2 || target._shape.size() != 1)
+    throw std::runtime_error(
+        "CrossEntropyLoss expects logits (N, C) and target indices (N)");
+  if (_shape[0] != target._shape[0])
+    throw std::runtime_error("Batch size mismatch in cross_entropy");
+
+  int N = _shape[0];
+  int C = _shape[1];
+  float total_loss = 0.0f;
+
+  for (int i = 0; i < N; ++i) {
+    // Find max for logsumexp stability
+    float max_val = _data[i * C];
+    for (int j = 1; j < C; ++j) {
+      max_val = std::max(max_val, _data[i * C + j]);
+    }
+
+    float sum_exp = 0.0f;
+    for (int j = 0; j < C; ++j) {
+      sum_exp += std::exp(_data[i * C + j] - max_val);
+    }
+    float logsumexp = max_val + std::log(sum_exp);
+
+    int target_idx = (int)target._data[i];
+    total_loss += -_data[i * C + target_idx] + logsumexp;
+  }
+
+  Tensor res({1});
+  res._data[0] = total_loss / N;
+
+  if (this->requires_grad) {
+    res.requires_grad = true;
+    res.op_type = "cross_entropy";
+    res.parents = {(Tensor *)this, (Tensor *)&target};
+  }
+  return res;
+}
+
 Tensor Tensor::conv2d(const Tensor &kernel, int stride, int padding) const {
   if (_shape.size() != 4 || kernel._shape.size() != 4)
     throw std::runtime_error("Conv2d expects 4D input and kernel");
@@ -630,6 +669,40 @@ void Tensor::backward() {
               X.grad->_data[idx] +=
                   Y._data[idx] * (d_out._data[idx] - sum_y_dy);
             }
+          }
+        }
+      }
+    } else if (op == "cross_entropy") {
+      Tensor &X = *parents[0];
+      Tensor &target = *parents[1];
+      if (X.requires_grad) {
+        if (!X.grad)
+          X.grad = new Tensor(X._shape);
+        int N = X._shape[0];
+        int C = X._shape[1];
+        float d_loss = d_out._data[0];
+
+        for (int i = 0; i < N; ++i) {
+          // Compute softmax for this sample
+          float max_val = X._data[i * C];
+          for (int j = 1; j < C; ++j)
+            max_val = std::max(max_val, X._data[i * C + j]);
+
+          float sum_exp = 0.0f;
+          std::vector<float> soft(C);
+          for (int j = 0; j < C; ++j) {
+            soft[j] = std::exp(X._data[i * C + j] - max_val);
+            sum_exp += soft[j];
+          }
+          for (int j = 0; j < C; j++)
+            soft[j] /= sum_exp;
+
+          int target_idx = (int)target._data[i];
+          for (int j = 0; j < C; j++) {
+            float grad_val = soft[j];
+            if (j == target_idx)
+              grad_val -= 1.0f;
+            X.grad->_data[i * C + j] += d_loss * grad_val / N;
           }
         }
       }

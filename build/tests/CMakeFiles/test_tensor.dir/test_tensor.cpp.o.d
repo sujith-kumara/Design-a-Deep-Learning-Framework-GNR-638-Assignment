@@ -1,5 +1,6 @@
 tests/CMakeFiles/test_tensor.dir/test_tensor.cpp.o: \
   /Users/sujith/Desktop/IITB/assignment_github_folder/tests/test_tensor.cpp \
+  /Users/sujith/Desktop/IITB/assignment_github_folder/framework/include/deeplearn/loss.h \
   /Users/sujith/Desktop/IITB/assignment_github_folder/framework/include/deeplearn/tensor.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/iostream \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__config \

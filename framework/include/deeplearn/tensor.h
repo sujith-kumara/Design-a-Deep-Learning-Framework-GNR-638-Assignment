@@ -33,8 +33,9 @@ public:
   Tensor sum() const;       // Added
 
   // Neural Network Operations
-  Tensor relu() const;                // Added
-  Tensor softmax(int dim = -1) const; // Added
+  Tensor relu() const;                              // Added
+  Tensor softmax(int dim = -1) const;               // Added
+  Tensor cross_entropy(const Tensor &target) const; // Added
   Tensor conv2d(const Tensor &kernel, int stride = 1, int padding = 0) const;
   Tensor maxpool2d(int kernel_size, int stride = 1) const;
 
