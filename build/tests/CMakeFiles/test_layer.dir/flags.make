@@ -6,7 +6,7 @@ CXX_DEFINES =
 
 CXX_INCLUDES = -I/Users/sujith/Desktop/IITB/assignment_github_folder/framework/include
 
-CXX_FLAGSarm64 = -std=gnu++17 -arch arm64
+CXX_FLAGSarm64 =  -O3 -std=gnu++17 -arch arm64
 
-CXX_FLAGS = -std=gnu++17 -arch arm64
+CXX_FLAGS =  -O3 -std=gnu++17 -arch arm64
 

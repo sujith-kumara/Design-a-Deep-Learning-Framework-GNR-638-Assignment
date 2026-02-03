@@ -25,10 +25,21 @@ make -j4
 The framework currently supports training a CNN (Conv -> ReLU -> MaxPool -> Linear) on the provided datasets.
 
 ### 1. Training
-The training script will load the dataset from `data_1`, train the model for 3 epochs, and save the weights to `cnn_weights.npz`.
+The training script supports command-line arguments to specify the dataset, number of epochs, and output path for weights.
 
+**Train on Dataset 1:**
 ```bash
-python3 python/train.py
+python python/train.py --dataset data_1 --epochs 20 --save_path cnn_weights_data1.npz
+```
+
+**Train on Dataset 2:**
+```bash
+python python/train.py --dataset data_2 --epochs 20 --save_path cnn_weights_data2.npz
+```
+
+**General Usage:**
+```bash
+python python/train.py --dataset <DATASET_PATH> --epochs <NUM_EPOCHS> --save_path <OUTPUT_PATH>
 ```
 
 ### 2. Evaluation
