@@ -88,8 +88,8 @@ def visualize_model(args):
     
     x = dl.Tensor.from_list(flat_img, [1, 3, 32, 32])
     
-    # Initialize Model (3-Conv version)
-    model = SimpleCNN(num_classes=10)
+    # Initialize Model (2nd Conv version)
+    model = SimpleCNN(num_classes=args.num_classes)
     if weights_path:
         model.load_weights(weights_path)
     
@@ -113,5 +113,6 @@ if __name__ == "__main__":
     parser.add_argument('--weights', type=str, default='cnn_weights.pkl')
     parser.add_argument('--image', type=str, required=True)
     parser.add_argument('--output', type=str, default='visualizations')
+    parser.add_argument('--num_classes', type=int, default=10)
     args = parser.parse_args()
     visualize_model(args)

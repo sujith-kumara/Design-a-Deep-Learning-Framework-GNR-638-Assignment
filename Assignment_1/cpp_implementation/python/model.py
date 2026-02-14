@@ -18,15 +18,11 @@ class SimpleCNN:
         # Block 2: 32 → 64 channels, 3x3, P=1, S=1 (Output: 16x16)
         self.conv2 = dl.Conv2D(32, 64, 3, 1, 1)
         # After MaxPool: 8x8
-        
-        # Block 3: 64 → 128 channels, 3x3, P=1, S=1 (Output: 8x8)
-        self.conv3 = dl.Conv2D(64, 128, 3, 1, 1)
-        # After MaxPool: 4x4
-        # Flattened size: 128 * 4 * 4 = 2048
+        # Flattened size: 64 * 8 * 8 = 4096
         
         # Classifier
-        self.fc1 = dl.Linear(2048, 128)
-        self.fc2 = dl.Linear(128, num_classes)
+        self.fc1 = dl.Linear(4096, 256)
+        self.fc2 = dl.Linear(256, num_classes)
         self.num_classes = num_classes
         self.device = dl.Device.CPU
 
@@ -37,8 +33,6 @@ class SimpleCNN:
         self.conv1.b = self.conv1.b.to(device)
         self.conv2.W = self.conv2.W.to(device)
         self.conv2.b = self.conv2.b.to(device)
-        self.conv3.W = self.conv3.W.to(device)
-        self.conv3.b = self.conv3.b.to(device)
         self.fc1.W = self.fc1.W.to(device)
         self.fc1.b = self.fc1.b.to(device)
         self.fc2.W = self.fc2.W.to(device)
@@ -46,24 +40,18 @@ class SimpleCNN:
         return self
 
     def forward(self, x):
-        # Block 1
+        # Input: [B, 3, 32, 32]
         x = self.conv1(x)           # [B, 32, 32, 32]
         x = x.relu()
         x = x.maxpool2d(2, 2)       # [B, 32, 16, 16]
         
-        # Block 2
         x = self.conv2(x)           # [B, 64, 16, 16]
         x = x.relu()
         x = x.maxpool2d(2, 2)       # [B, 64, 8, 8]
         
-        # Block 3
-        x = self.conv3(x)           # [B, 128, 8, 8]
-        x = x.relu()
-        x = x.maxpool2d(2, 2)       # [B, 128, 4, 4]
-        
         # Flatten
         batch_size = x.shape[0]
-        x.reshape([batch_size, 2048])
+        x.reshape([batch_size, 4096])
         
         # Classifier
         x = self.fc1(x)
@@ -77,8 +65,7 @@ class SimpleCNN:
 
     def parameters(self):
         return (self.conv1.parameters() + self.conv2.parameters() + 
-                self.conv3.parameters() + self.fc1.parameters() + 
-                self.fc2.parameters())
+                self.fc1.parameters() + self.fc2.parameters())
 
     def save_weights(self, path):
         """Save weights to a file using pickle."""
@@ -87,8 +74,6 @@ class SimpleCNN:
             'conv1_b_data': self.conv1.b.tolist(), 'conv1_b_shape': self.conv1.b.shape,
             'conv2_W_data': self.conv2.W.tolist(), 'conv2_W_shape': self.conv2.W.shape,
             'conv2_b_data': self.conv2.b.tolist(), 'conv2_b_shape': self.conv2.b.shape,
-            'conv3_W_data': self.conv3.W.tolist(), 'conv3_W_shape': self.conv3.W.shape,
-            'conv3_b_data': self.conv3.b.tolist(), 'conv3_b_shape': self.conv3.b.shape,
             'fc1_W_data': self.fc1.W.tolist(), 'fc1_W_shape': self.fc1.W.shape,
             'fc1_b_data': self.fc1.b.tolist(), 'fc1_b_shape': self.fc1.b.shape,
             'fc2_W_data': self.fc2.W.tolist(), 'fc2_W_shape': self.fc2.W.shape,
@@ -111,8 +96,6 @@ class SimpleCNN:
         self.conv1.b = dl.Tensor.from_list(data['conv1_b_data'], data['conv1_b_shape'])
         self.conv2.W = dl.Tensor.from_list(data['conv2_W_data'], data['conv2_W_shape'])
         self.conv2.b = dl.Tensor.from_list(data['conv2_b_data'], data['conv2_b_shape'])
-        self.conv3.W = dl.Tensor.from_list(data['conv3_W_data'], data['conv3_W_shape'])
-        self.conv3.b = dl.Tensor.from_list(data['conv3_b_data'], data['conv3_b_shape'])
         self.fc1.W = dl.Tensor.from_list(data['fc1_W_data'], data['fc1_W_shape'])
         self.fc1.b = dl.Tensor.from_list(data['fc1_b_data'], data['fc1_b_shape'])
         self.fc2.W = dl.Tensor.from_list(data['fc2_W_data'], data['fc2_W_shape'])
@@ -121,7 +104,7 @@ class SimpleCNN:
 
     def print_stats(self):
         print("\n" + "="*40)
-        print("          Model Statistics (3-Conv)          ")
+        print("          Model Statistics (2-Conv)          ")
         print("="*40)
         
         # Conv1: (3->32, 3x3)
@@ -132,25 +115,20 @@ class SimpleCNN:
         c2_p = (3 * 3 * 32 + 1) * 64
         c2_m = (16 * 16 * 64) * (3 * 3 * 32)
         
-        # Conv3: (64->128, 3x3)
-        c3_p = (3 * 3 * 64 + 1) * 128
-        c3_m = (8 * 8 * 128) * (3 * 3 * 64)
+        # FC1: (4096->256)
+        f1_p = (4096 + 1) * 256
+        f1_m = 4096 * 256
         
-        # FC1: (2048->128)
-        f1_p = (2048 + 1) * 128
-        f1_m = 2048 * 128
+        # FC2: (256->num_classes)
+        f2_p = (256 + 1) * self.num_classes
+        f2_m = 256 * self.num_classes
         
-        # FC2: (128->num_classes)
-        f2_p = (128 + 1) * self.num_classes
-        f2_m = 128 * self.num_classes
-        
-        total_p = c1_p + c2_p + c3_p + f1_p + f2_p
-        total_m = c1_m + c2_m + c3_m + f1_m + f2_m
+        total_p = c1_p + c2_p + f1_p + f2_p
+        total_m = c1_m + c2_m + f1_m + f2_m
         
         print(f"Conv1 (32):       Params: {c1_p:,}")
         print(f"Conv2 (64):       Params: {c2_p:,}")
-        print(f"Conv3 (128):      Params: {c3_p:,}")
-        print(f"FC1 (128):        Params: {f1_p:,}")
+        print(f"FC1 (256):        Params: {f1_p:,}")
         print(f"FC2 ({self.num_classes}):         Params: {f2_p:,}")
         print("-" * 40)
         print(f"TOTAL PARAMS:  {total_p:,}")

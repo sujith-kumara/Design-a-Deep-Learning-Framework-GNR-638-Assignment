@@ -1,8 +1,8 @@
 import os
 import time
 import sys
-import pickle
 import json
+import pickle
 from dataloader import DataLoader
 from model import SimpleCNN
 
@@ -56,7 +56,7 @@ def train(args):
         print(f"Error loading data: {e}")
         return
 
-    # Device selection (GPU if available in backend, but frontend uses Device.GPU enum)
+    # Device selection
     device = dl.Device.GPU
     print(f"Device selected: {device}")
 
@@ -87,6 +87,7 @@ def train(args):
         for images, labels, load_time in loader:
             batch_idx += 1
             total_load_time += load_time
+            
             images = images.to(device)
             labels = labels.to(device)
 
@@ -96,16 +97,17 @@ def train(args):
             loss.backward()
             optimizer.step()
             
-            # Metrics using list conversion
+            # Metrics using list conversion (tolist instead of to_numpy)
             current_loss = loss.tolist()[0]
             total_train_loss += current_loss
             
             logits_list = logits.tolist()
             labels_list = labels.tolist()
             
-            correct = get_accuracy(logits_list, labels_list, len(labels_list), num_classes)
+            num_in_batch = len(labels_list)
+            correct = get_accuracy(logits_list, labels_list, num_in_batch, num_classes)
             train_correct += correct
-            train_total += len(labels_list)
+            train_total += num_in_batch
 
             if batch_idx % 10 == 0 or batch_idx == len(loader):
                 acc = 100.0 * train_correct / train_total
@@ -116,25 +118,34 @@ def train(args):
         train_acc = 100.0 * train_correct / train_total
 
         # --- Validation Phase ---
+        val_acc = 0.0
+        avg_val_loss = 0.0
         if val_split > 0:
             loader.set_mode('val')
+            total_val_loss = 0.0
             val_correct = 0
             val_total = 0
-            total_val_loss = 0.0
             
-            for images, labels, _ in loader:
+            print("  Running Validation...")
+            for images, labels, load_time in loader:
                 images = images.to(device)
                 labels = labels.to(device)
+                
                 logits = model(images)
                 loss = criterion(logits, labels)
                 
                 total_val_loss += loss.tolist()[0]
-                val_correct += get_accuracy(logits.tolist(), labels.tolist(), len(labels.tolist()), num_classes)
-                val_total += len(labels.tolist())
+                vl_logits = logits.tolist()
+                vl_labels = labels.tolist()
+                
+                val_correct += get_accuracy(vl_logits, vl_labels, len(vl_labels), num_classes)
+                val_total += len(vl_labels)
             
             val_acc = 100.0 * val_correct / val_total
-            print(f"  [Val] Loss: {total_val_loss/len(loader):.4f}, Accuracy: {val_acc:.2f}%")
+            avg_val_loss = total_val_loss / len(loader)
+            print(f"  [Val] Loss: {avg_val_loss:.4f}, Accuracy: {val_acc:.2f}%")
 
+            # Save best model
             if val_acc > best_val_acc:
                 best_val_acc = val_acc
                 best_path = weights_path.replace('.pkl', '_best.pkl')
@@ -142,7 +153,39 @@ def train(args):
                 print(f"  ✓ Best model saved with {val_acc:.2f}% accuracy")
 
         epoch_end = time.time()
+        print(f"\n  Epoch {epoch+1} Summary:")
+        print(f"  Train Loss: {avg_train_loss:.4f}, Train Acc: {train_acc:.2f}%")
+        if val_split > 0:
+            print(f"  Val Loss:   {avg_val_loss:.4f}, Val Acc:   {val_acc:.2f}%")
         print(f"  Total Time: {epoch_end - epoch_start:.2f} seconds")
+
+    print(f"\nFinal training loss: {avg_train_loss:.4f}, acc: {train_acc:.2f}%")
+    
+    # --- Final Evaluation on Test Set ---
+    print("\n" + "="*40)
+    print("      FINAL EVALUATION (TEST SET)")
+    print("="*40)
+    loader.set_mode('test')
+    test_correct = 0
+    test_total = 0
+    test_loss = 0.0
+    for images, labels, _ in loader:
+        images = images.to(device)
+        labels = labels.to(device)
+        logits = model(images)
+        loss = criterion(logits, labels)
+        
+        tl_list = loss.tolist()
+        test_loss += tl_list[0]
+        
+        t_logits = logits.tolist()
+        t_labels = labels.tolist()
+        test_correct += get_accuracy(t_logits, t_labels, len(t_labels), num_classes)
+        test_total += len(t_labels)
+    
+    print(f"Test Loss: {test_loss/len(loader):.4f}")
+    print(f"Test Acc:  {100.0 * test_correct / test_total:.2f}%")
+    print("="*40)
 
     # Final save
     print(f"\nSaving final weights to {weights_path}")
@@ -150,9 +193,10 @@ def train(args):
 
 if __name__ == "__main__":
     import argparse
+    
     parser = argparse.ArgumentParser(description='Train CNN on a custom dataset')
-    parser.add_argument('--dataset', type=str, required=True)
-    parser.add_argument('--config', type=str, help='Path to JSON config')
+    parser.add_argument('--dataset', type=str, required=True, help='Path to dataset')
+    parser.add_argument('--config', type=str, help='Path to config')
     parser.add_argument('--epochs', type=int, default=1)
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--lr', type=float, default=0.01)

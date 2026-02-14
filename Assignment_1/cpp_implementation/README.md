@@ -1,6 +1,6 @@
 # GNR 638 Assignment 1: Deep Learning Framework
 
-This is a custom deep learning framework built from scratch with a C++ backend and Python bindings.
+This is a custom deep learning framework built from scratch with a C++ backend and Python bindings (No NumPy, No Torch).
 
 ## Project Structure
 - `Assignment_1/data_x`: Datasets
@@ -17,18 +17,34 @@ cmake ..
 make -j4
 cd ..
 ```
-*Note: If you have multiple Python versions, you can specify your python path during cmake:*
-*`cmake -DPython3_EXECUTABLE=$(which python3) ..`*
 
 ### 2. Run Training
-Use the provided scripts from the `cpp_implementation` folder:
-- **Dataset 1:** `cpp_implementation/scripts/run_data_2.sh`
-- **Dataset 2:** `cpp_implementation/scripts/run_data_2.sh`
-- **Interactive:** `cpp_implementation/setup_and_run.sh`
+Run these from the `Assignment_1/cpp_implementation` directory:
+- **Dataset 1:** `./scripts/run_data_1.sh`
+- **Dataset 2:** `./scripts/run_data_2.sh`
+- **Setup & Run:** `./setup_and_run.sh`
 
 ### 3. Run Evaluation
-- **Dataset 1:** `cpp_implementation/scripts/evaluate_data_1.sh`
-- **Dataset 2:** `cpp_implementation/scripts/evaluate_data_2.sh`
+- **Dataset 1:** `./scripts/evaluate_data_1.sh`
+- **Dataset 2:** `./scripts/evaluate_data_2.sh`
 
 ### 4. Visualization
-- **Generate Feature Maps:** `python3 cpp_implementation/python/visualize.py --image path/to/image.png`
+To visualize feature maps (requires saved weights):
+```bash
+python3 python/visualize.py --image ../data_1/Abyssinian/Image_1.png --weights python/cnn_weights.pkl
+```
+
+---
+
+## 🛠️ Prerequisites
+- Python 3.12+
+- `opencv-python-headless` (for image loading)
+- `pybind11` (for C++ bindings)
+- `cmake` (for building)
+
+*Note: NumPy is strictly prohibited and has been completely removed.*
+
+## 📊 Model Performance (2-Conv)
+- **Epoch Time:** ~40-50 minutes (on CPU)
+- **Train Accuracy:** ~75-80% (Dataset 1)
+- **Target Epoch Limit:** < 3 Hours (Met)

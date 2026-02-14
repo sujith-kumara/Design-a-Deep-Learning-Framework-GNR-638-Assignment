@@ -62,7 +62,9 @@ def evaluate(args):
     total = 0
     num_batches = 0
     
-    for images, labels, _ in loader:
+    total_load_time = 0.0
+    for images, labels, load_time in loader:
+        total_load_time += load_time
         images = images.to(device)
         labels = labels.to(device)
         
@@ -91,6 +93,7 @@ def evaluate(args):
     print(f"Total Samples:    {total}")
     print(f"Average Loss:     {avg_loss:.4f}")
     print(f"Accuracy:         {accuracy:.2f}%")
+    print(f"Dataset Load Time: {total_load_time:.2f} seconds")
     print(f"Evaluation Time:  {eval_time:.2f} seconds")
     print("========================================")
     
