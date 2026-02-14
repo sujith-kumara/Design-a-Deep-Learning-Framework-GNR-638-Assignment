@@ -6,7 +6,7 @@ CXX_DEFINES = -Ddeeplearn_py_EXPORTS
 
 CXX_INCLUDES = -I/Users/sujith/Desktop/IITB/assignment_github_folder/framework/include -isystem /opt/anaconda3/include/python3.12 -isystem /Users/sujith/Desktop/IITB/assignment_github_folder/build/_deps/pybind11-src/include
 
-CXX_FLAGSarm64 =  -O3 -fPIC -std=gnu++17 -arch arm64 -fPIC -fvisibility=hidden
+CXX_FLAGSarm64 =  -O3 -fPIC -std=gnu++17 -arch arm64 -fPIC -fvisibility=hidden -flto
 
-CXX_FLAGS =  -O3 -fPIC -std=gnu++17 -arch arm64 -fPIC -fvisibility=hidden
+CXX_FLAGS =  -O3 -fPIC -std=gnu++17 -arch arm64 -fPIC -fvisibility=hidden -flto
 

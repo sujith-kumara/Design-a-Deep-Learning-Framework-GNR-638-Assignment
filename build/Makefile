@@ -175,58 +175,6 @@ deeplearn/fast:
 .PHONY : deeplearn/fast
 
 #=============================================================================
-# Target rules for targets named test_tensor
-
-# Build rule for target.
-test_tensor: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_tensor
-.PHONY : test_tensor
-
-# fast build rule for target.
-test_tensor/fast:
-	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_tensor.dir/build.make tests/CMakeFiles/test_tensor.dir/build
-.PHONY : test_tensor/fast
-
-#=============================================================================
-# Target rules for targets named test_layer
-
-# Build rule for target.
-test_layer: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_layer
-.PHONY : test_layer
-
-# fast build rule for target.
-test_layer/fast:
-	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_layer.dir/build.make tests/CMakeFiles/test_layer.dir/build
-.PHONY : test_layer/fast
-
-#=============================================================================
-# Target rules for targets named test_optim
-
-# Build rule for target.
-test_optim: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_optim
-.PHONY : test_optim
-
-# fast build rule for target.
-test_optim/fast:
-	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_optim.dir/build.make tests/CMakeFiles/test_optim.dir/build
-.PHONY : test_optim/fast
-
-#=============================================================================
-# Target rules for targets named example_sgd_training
-
-# Build rule for target.
-example_sgd_training: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 example_sgd_training
-.PHONY : example_sgd_training
-
-# fast build rule for target.
-example_sgd_training/fast:
-	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/example_sgd_training.dir/build.make tests/CMakeFiles/example_sgd_training.dir/build
-.PHONY : example_sgd_training/fast
-
-#=============================================================================
 # Target rules for targets named deeplearn_py
 
 # Build rule for target.
@@ -325,10 +273,6 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... deeplearn"
 	@echo "... deeplearn_py"
-	@echo "... example_sgd_training"
-	@echo "... test_layer"
-	@echo "... test_optim"
-	@echo "... test_tensor"
 	@echo "... framework/src/layers.o"
 	@echo "... framework/src/layers.i"
 	@echo "... framework/src/layers.s"
