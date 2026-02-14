@@ -1,1 +1,1 @@
-/usr/bin/c++  -O3 -arch arm64 -bundle -Wl,-headerpad_max_install_names -Xlinker -undefined -Xlinker dynamic_lookup -o deeplearn.cpython-312-darwin.so CMakeFiles/deeplearn_py.dir/python_bindings.cpp.o  ../libdeeplearn.a
+/usr/bin/c++  -O3 -fPIC -arch arm64 -bundle -Wl,-headerpad_max_install_names -Xlinker -undefined -Xlinker dynamic_lookup -o deeplearn.cpython-312-darwin.so CMakeFiles/deeplearn_py.dir/python_bindings.cpp.o  ../libdeeplearn.a

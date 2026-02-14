@@ -1,25 +1,57 @@
 #include "deeplearn/tensor.h"
 #include <algorithm>
+#include <cmath> // For std::exp, std::log, etc.
 #include <iomanip>
-#include <iostream> // Added for std::cout, std::endl
+#include <iostream> // For std::cout, std::endl
 #include <numeric>
 
 namespace dl {
 
 Tensor::Tensor() : grad(nullptr), requires_grad(false), op_type("") {}
 
-Tensor::Tensor(const std::vector<int> &shape)
-    : _shape(shape), grad(nullptr), requires_grad(false), op_type("") {
+Tensor::Tensor(const std::vector<int> &shape, Device device)
+    : _shape(shape), grad(nullptr), requires_grad(false), op_type(""),
+      _device(device) {
   size_t total_size = numel();
   _data.assign(total_size, 0.0f);
 }
 
-Tensor::Tensor(const std::vector<int> &shape, const std::vector<float> &data)
+Tensor::Tensor(const std::vector<int> &shape, const std::vector<float> &data,
+               Device device)
     : _shape(shape), _data(data), grad(nullptr), requires_grad(false),
-      op_type("") {
+      op_type(""), _device(device) {
   if (_data.size() != numel()) {
     throw std::runtime_error("Data size mismatch in Tensor constructor");
   }
+}
+
+Tensor Tensor::to(Device device) {
+  if (_device == device) {
+    return *this;
+  }
+  // In a real implementation with CUDA, we would copy data here.
+  // For now, we just change the device flag and return a copy/move.
+  // Since we don't have actual GPU memory management yet, this acts as a
+  // placeholder.
+  Tensor res = *this;
+  res._device = device;
+  if (device == Device::GPU) {
+#ifdef USE_CUDA
+    std::cout << "Moved tensor to GPU (Simulation)" << std::endl;
+#else
+    static bool warned = false;
+    if (!warned) {
+      std::cout << "Warning: GPU not available, tensor remains on CPU "
+                   "(suppressing further warnings)"
+                << std::endl;
+      warned = true;
+    }
+    res._device = Device::CPU;
+#endif
+  } else {
+    std::cout << "Moved tensor to CPU" << std::endl;
+  }
+  return res;
 }
 
 Tensor::~Tensor() {
@@ -168,8 +200,12 @@ Tensor Tensor::add(const Tensor &other) const {
 
   Tensor res(res_shape);
   if (!broadcast) {
-    for (size_t i = 0; i < _data.size(); ++i)
-      res._data[i] = _data[i] + other._data[i];
+    const float *a_ptr = _data.data();
+    const float *b_ptr = other._data.data();
+    float *r_ptr = res._data.data();
+    size_t n = _data.size();
+    for (size_t i = 0; i < n; ++i)
+      r_ptr[i] = a_ptr[i] + b_ptr[i];
   } else {
     // Basic broadcasting implementation
     size_t total = res.numel();
@@ -206,8 +242,12 @@ Tensor Tensor::sub(const Tensor &other) const {
   if (_shape != other._shape)
     throw std::runtime_error("Shape mismatch for sub");
   Tensor res(_shape);
-  for (size_t i = 0; i < _data.size(); ++i)
-    res._data[i] = _data[i] - other._data[i];
+  const float *a_ptr = _data.data();
+  const float *b_ptr = other._data.data();
+  float *r_ptr = res._data.data();
+  size_t n = _data.size();
+  for (size_t i = 0; i < n; ++i)
+    r_ptr[i] = a_ptr[i] - b_ptr[i];
 
   if (this->requires_grad || other.requires_grad) {
     res.requires_grad = true;
@@ -221,8 +261,12 @@ Tensor Tensor::mul(const Tensor &other) const {
   if (_shape != other._shape)
     throw std::runtime_error("Shape mismatch for mul");
   Tensor res(_shape);
-  for (size_t i = 0; i < _data.size(); ++i)
-    res._data[i] = _data[i] * other._data[i];
+  const float *a_ptr = _data.data();
+  const float *b_ptr = other._data.data();
+  float *r_ptr = res._data.data();
+  size_t n = _data.size();
+  for (size_t i = 0; i < n; ++i)
+    r_ptr[i] = a_ptr[i] * b_ptr[i];
 
   if (this->requires_grad || other.requires_grad) {
     res.requires_grad = true;
@@ -243,13 +287,16 @@ Tensor Tensor::matmul(const Tensor &other) const {
   int N = other._shape[1];
   Tensor res({M, N});
 
+  const float *A_ptr = _data.data();
+  const float *B_ptr = other._data.data();
+  float *res_ptr = res._data.data();
+
   for (int i = 0; i < M; ++i) {
-    for (int j = 0; j < N; ++j) {
-      float sum = 0;
-      for (int k = 0; k < K; ++k) {
-        sum += (*this)({i, k}) * other({k, j});
+    for (int k = 0; k < K; ++k) {
+      float a_val = A_ptr[i * K + k];
+      for (int j = 0; j < N; ++j) {
+        res_ptr[i * N + j] += a_val * B_ptr[k * N + j];
       }
-      res({i, j}) = sum;
     }
   }
 
@@ -282,8 +329,11 @@ Tensor Tensor::transpose() const {
 
 Tensor Tensor::relu() const {
   Tensor res(_shape);
-  for (size_t i = 0; i < _data.size(); ++i) {
-    res._data[i] = std::max(0.0f, _data[i]);
+  const float *in_ptr = _data.data();
+  float *out_ptr = res._data.data();
+  size_t n = _data.size();
+  for (size_t i = 0; i < n; ++i) {
+    out_ptr[i] = std::max(0.0f, in_ptr[i]);
   }
   if (this->requires_grad) {
     res.requires_grad = true;
@@ -397,6 +447,22 @@ Tensor Tensor::conv2d(const Tensor &kernel, int stride, int padding) const {
   int Wout = (W + 2 * padding - kW) / stride + 1;
 
   Tensor res({B, Cout, Hout, Wout});
+  const float *in_ptr = _data.data();
+  const float *k_ptr = kernel._data.data();
+  float *out_ptr = res._data.data();
+
+  // Stride pre-calculation
+  int in_sB = C * H * W;
+  int in_sC = H * W;
+  int in_sH = W;
+
+  int k_sCout = Cin * kH * kW;
+  int k_sCin = kH * kW;
+  int k_sH = kW;
+
+  int out_sB = Cout * Hout * Wout;
+  int out_sC = Hout * Wout;
+  int out_sH = Wout;
 
   for (int b = 0; b < B; ++b) {
     for (int co = 0; co < Cout; ++co) {
@@ -405,16 +471,19 @@ Tensor Tensor::conv2d(const Tensor &kernel, int stride, int padding) const {
           float val = 0;
           for (int ci = 0; ci < Cin; ++ci) {
             for (int kh = 0; kh < kH; ++kh) {
+              int ih = h * stride + kh - padding;
+              if (ih < 0 || ih >= H)
+                continue;
               for (int kw = 0; kw < kW; ++kw) {
-                int ih = h * stride + kh - padding;
                 int iw = w * stride + kw - padding;
-                if (ih >= 0 && ih < H && iw >= 0 && iw < W) {
-                  val += (*this)({b, ci, ih, iw}) * kernel({co, ci, kh, kw});
+                if (iw >= 0 && iw < W) {
+                  val += in_ptr[b * in_sB + ci * in_sC + ih * in_sH + iw] *
+                         k_ptr[co * k_sCout + ci * k_sCin + kh * k_sH + kw];
                 }
               }
             }
           }
-          res({b, co, h, w}) = val;
+          out_ptr[b * out_sB + co * out_sC + h * out_sH + w] = val;
         }
       }
     }
@@ -447,26 +516,37 @@ Tensor Tensor::maxpool2d(int kernel_size, int stride) const {
   if (this->requires_grad)
     res._max_indices.resize(res.numel());
 
+  const float *in_ptr = _data.data();
+  float *out_ptr = res._data.data();
+
+  int in_sB = C * H * W;
+  int in_sC = H * W;
+  int in_sH = W;
+
+  int out_sB = C * Hout * Wout;
+  int out_sC = Hout * Wout;
+  int out_sH = Wout;
+
   for (int b = 0; b < B; ++b) {
     for (int c = 0; c < C; ++c) {
       for (int h = 0; h < Hout; ++h) {
         for (int w = 0; w < Wout; ++w) {
-          float max_val = -1e30f;
+          float max_val = -std::numeric_limits<float>::infinity();
           size_t max_idx = 0;
           for (int kh = 0; kh < kernel_size; ++kh) {
             for (int kw = 0; kw < kernel_size; ++kw) {
               int ih = h * stride + kh;
               int iw = w * stride + kw;
-              size_t curr_idx = get_flat_index({b, c, ih, iw});
-              float curr_val = _data[curr_idx];
+              size_t curr_idx = b * in_sB + c * in_sC + ih * in_sH + iw;
+              float curr_val = in_ptr[curr_idx];
               if (curr_val > max_val) {
                 max_val = curr_val;
                 max_idx = curr_idx;
               }
             }
           }
-          size_t out_idx = res.get_flat_index({b, c, h, w});
-          res._data[out_idx] = max_val;
+          size_t out_idx = b * out_sB + c * out_sC + h * out_sH + w;
+          out_ptr[out_idx] = max_val;
           if (this->requires_grad)
             res._max_indices[out_idx] = max_idx;
         }
@@ -619,67 +699,117 @@ void Tensor::backward() {
     } else if (op == "matmul") {
       Tensor &A = *parents[0];
       Tensor &B = *parents[1];
+      int M = A._shape[0], K = A._shape[1], N = B._shape[1];
+      const float *d_out_ptr = d_out._data.data();
+
       if (A.requires_grad) {
         if (!A.grad)
           A.grad = new Tensor(A._shape);
-        int M = A._shape[0], K = A._shape[1], N = B._shape[1];
-        for (int i = 0; i < M; ++i)
-          for (int k = 0; k < K; ++k)
-            for (int j = 0; j < N; ++j)
-              A.grad->operator()({i, k}) += d_out({i, j}) * B({k, j});
+        float *dA_ptr = A.grad->_data.data();
+        const float *B_ptr = B._data.data();
+        for (int i = 0; i < M; ++i) {
+          for (int k = 0; k < K; ++k) {
+            float sum = 0;
+            for (int j = 0; j < N; ++j) {
+              sum += d_out_ptr[i * N + j] * B_ptr[k * N + j];
+            }
+            dA_ptr[i * K + k] += sum;
+          }
+        }
       }
       if (B.requires_grad) {
         if (!B.grad)
           B.grad = new Tensor(B._shape);
-        int M = A._shape[0], K = A._shape[1], N = B._shape[1];
-        for (int k = 0; k < K; ++k)
-          for (int j = 0; j < N; ++j)
-            for (int i = 0; i < M; ++i)
-              B.grad->operator()({k, j}) += A({i, k}) * d_out({i, j});
+        float *dB_ptr = B.grad->_data.data();
+        const float *A_ptr = A._data.data();
+        for (int i = 0; i < M; ++i) {
+          for (int k = 0; k < K; ++k) {
+            float a_val = A_ptr[i * K + k];
+            for (int j = 0; j < N; ++j) {
+              dB_ptr[k * N + j] += a_val * d_out_ptr[i * N + j];
+            }
+          }
+        }
       }
     } else if (op == "conv2d") {
       Tensor &X = *parents[0];
       Tensor &K = *parents[1];
-      int B = X._shape[0], C = X._shape[1], H = X._shape[2], W = X._shape[3];
-      int Cout = K._shape[0], Cin = K._shape[1], kH = K._shape[2],
-          kW = K._shape[3];
+      int B = X._shape[0], Cin = X._shape[1], H = X._shape[2], W = X._shape[3];
+      int Cout = K._shape[0], kH = K._shape[2], kW = K._shape[3];
       int s = node->stride, p = node->padding;
       int Hout = (H + 2 * p - kH) / s + 1;
       int Wout = (W + 2 * p - kW) / s + 1;
 
+      const float *d_out_ptr = d_out._data.data();
+      int out_sB = Cout * Hout * Wout, out_sC = Hout * Wout, out_sH = Wout;
+
       if (X.requires_grad) {
         if (!X.grad)
           X.grad = new Tensor(X._shape);
-        for (int b = 0; b < B; ++b)
-          for (int co = 0; co < Cout; ++co)
-            for (int h = 0; h < Hout; ++h)
-              for (int w = 0; w < Wout; ++w)
-                for (int ci = 0; ci < Cin; ++ci)
-                  for (int kh = 0; kh < kH; ++kh)
+        float *dX_ptr = X.grad->_data.data();
+        const float *K_ptr = K._data.data();
+        int in_sB = Cin * H * W, in_sC = H * W, in_sH = W;
+        int k_sCout = Cin * kH * kW, k_sCin = kH * kW, k_sH = kW;
+
+        for (int b = 0; b < B; ++b) {
+          for (int co = 0; co < Cout; ++co) {
+            for (int h = 0; h < Hout; ++h) {
+              for (int w = 0; w < Wout; ++w) {
+                float dout_val =
+                    d_out_ptr[b * out_sB + co * out_sC + h * out_sH + w];
+                for (int ci = 0; ci < Cin; ++ci) {
+                  for (int kh = 0; kh < kH; ++kh) {
+                    int ih = h * s + kh - p;
+                    if (ih < 0 || ih >= H)
+                      continue;
                     for (int kw = 0; kw < kW; ++kw) {
-                      int ih = h * s + kh - p;
                       int iw = w * s + kw - p;
-                      if (ih >= 0 && ih < H && iw >= 0 && iw < W)
-                        X.grad->operator()({b, ci, ih, iw}) +=
-                            d_out({b, co, h, w}) * K({co, ci, kh, kw});
+                      if (iw >= 0 && iw < W) {
+                        dX_ptr[b * in_sB + ci * in_sC + ih * in_sH + iw] +=
+                            dout_val *
+                            K_ptr[co * k_sCout + ci * k_sCin + kh * k_sH + kw];
+                      }
                     }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
       if (K.requires_grad) {
         if (!K.grad)
           K.grad = new Tensor(K._shape);
-        for (int b = 0; b < B; ++b)
-          for (int co = 0; co < Cout; ++co)
-            for (int h = 0; h < Hout; ++h)
-              for (int w = 0; w < Wout; ++w)
-                for (int ci = 0; ci < Cin; ++ci)
-                  for (int kh = 0; kh < kH; ++kh)
+        float *dK_ptr = K.grad->_data.data();
+        const float *X_ptr = X._data.data();
+        int in_sB = Cin * H * W, in_sC = H * W, in_sH = W;
+        int k_sCout = Cin * kH * kW, k_sCin = kH * kW, k_sH = kW;
+
+        for (int b = 0; b < B; ++b) {
+          for (int co = 0; co < Cout; ++co) {
+            for (int h = 0; h < Hout; ++h) {
+              for (int w = 0; w < Wout; ++w) {
+                float dout_val =
+                    d_out_ptr[b * out_sB + co * out_sC + h * out_sH + w];
+                for (int ci = 0; ci < Cin; ++ci) {
+                  for (int kh = 0; kh < kH; ++kh) {
+                    int ih = h * s + kh - p;
+                    if (ih < 0 || ih >= H)
+                      continue;
                     for (int kw = 0; kw < kW; ++kw) {
-                      int ih = h * s + kh - p;
                       int iw = w * s + kw - p;
-                      if (ih >= 0 && ih < H && iw >= 0 && iw < W)
-                        K.grad->operator()({co, ci, kh, kw}) +=
-                            d_out({b, co, h, w}) * X({b, ci, ih, iw});
+                      if (iw >= 0 && iw < W) {
+                        dK_ptr[co * k_sCout + ci * k_sCin + kh * k_sH + kw] +=
+                            dout_val *
+                            X_ptr[b * in_sB + ci * in_sC + ih * in_sH + iw];
+                      }
                     }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     } else if (op == "maxpool2d") {
       Tensor &X = *parents[0];

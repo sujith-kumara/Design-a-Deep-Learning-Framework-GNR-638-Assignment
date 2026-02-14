@@ -11,29 +11,59 @@ import deeplearn as dl
 
 class SimpleCNN:
     def __init__(self, num_classes=10):
-        # Conv2D: in=3, out=16, kernel=3, stride=1, padding=1
-        self.conv = dl.Conv2D(3, 16, 3, 1, 1)
-        # MaxPool2D(2, 2) reduces 32x32 to 16x16
-        # Flattened size: 16 channels * 16 * 16 = 4096
-        self.fc = dl.Linear(4096, num_classes)
+        # First Conv Block: 3 → 32 channels
+        self.conv1 = dl.Conv2D(3, 32, 3, 1, 1)
+        # After maxpool: 32x32 → 16x16
+        
+        # Second Conv Block: 32 → 64 channels
+        self.conv2 = dl.Conv2D(32, 64, 3, 1, 1)
+        # After maxpool: 16x16 → 8x8
+        # Flattened size: 64 * 8 * 8 = 4096
+        
+        # Fully connected layers
+        self.fc1 = dl.Linear(4096, 256)
+        self.fc2 = dl.Linear(256, num_classes)
+        self.num_classes = num_classes
+        self.device = dl.Device.CPU
+
+    def to(self, device):
+        """Move model to device."""
+        self.device = device
+        # Move all parameters
+        self.conv1.W = self.conv1.W.to(device)
+        self.conv1.b = self.conv1.b.to(device)
+        self.conv2.W = self.conv2.W.to(device)
+        self.conv2.b = self.conv2.b.to(device)
+        self.fc1.W = self.fc1.W.to(device)
+        self.fc1.b = self.fc1.b.to(device)
+        self.fc2.W = self.fc2.W.to(device)
+        self.fc2.b = self.fc2.b.to(device)
+        return self
+
         
     def forward(self, x):
-        # Input x: [B, 3, 32, 32]
+        # Input: [B, 3, 32, 32]
         
-        # Conv layer
-        x = self.conv(x)
-        # ReLU (ReLU is a method on Tensor)
-        x = x.relu()
-        # MaxPool2D (Method on Tensor)
-        x = x.maxpool2d(2, 2)
+        # First Conv Block
+        x = self.conv1(x)           # [B, 32, 32, 32]
+        x = x.relu()                # ReLU activation
+        x = x.maxpool2d(2, 2)       # [B, 32, 16, 16]
         
-        # Flatten: [B, 16, 16, 16] -> [B, 4096]
-        # In-place reshape in the current backend
+        # Second Conv Block
+        x = self.conv2(x)           # [B, 64, 16, 16]
+        x = x.relu()                # ReLU activation
+        x = x.maxpool2d(2, 2)       # [B, 64, 8, 8]
+        
+        # Flatten for fully connected layers
         batch_size = x.shape[0]
-        x.reshape([batch_size, 4096])
+        x.reshape([batch_size, 4096])  # [B, 4096]
         
-        # Linear layer
-        x = self.fc(x)
+        # First FC layer with ReLU
+        x = self.fc1(x)             # [B, 256]
+        x = x.relu()
+        
+        # Output layer
+        x = self.fc2(x)             # [B, num_classes]
         
         return x
 
@@ -41,15 +71,20 @@ class SimpleCNN:
         return self.forward(x)
 
     def parameters(self):
-        return self.conv.parameters() + self.fc.parameters()
+        return (self.conv1.parameters() + self.conv2.parameters() + 
+                self.fc1.parameters() + self.fc2.parameters())
 
     def save_weights(self, path):
         """Save weights to a directory or file using NumPy."""
         weights = {
-            'conv_W': self.conv.W.to_numpy(),
-            'conv_b': self.conv.b.to_numpy(),
-            'fc_W': self.fc.W.to_numpy(),
-            'fc_b': self.fc.b.to_numpy()
+            'conv1_W': self.conv1.W.to_numpy(),
+            'conv1_b': self.conv1.b.to_numpy(),
+            'conv2_W': self.conv2.W.to_numpy(),
+            'conv2_b': self.conv2.b.to_numpy(),
+            'fc1_W': self.fc1.W.to_numpy(),
+            'fc1_b': self.fc1.b.to_numpy(),
+            'fc2_W': self.fc2.W.to_numpy(),
+            'fc2_b': self.fc2.b.to_numpy()
         }
         np.savez(path, **weights)
         print(f"Weights saved to {path}")
@@ -57,83 +92,49 @@ class SimpleCNN:
     def load_weights(self, path):
         """Load weights from a .npz file."""
         data = np.load(path)
-        self.conv.W = dl.Tensor.from_numpy(data['conv_W'])
-        self.conv.b = dl.Tensor.from_numpy(data['conv_b'])
-        self.fc.W = dl.Tensor.from_numpy(data['fc_W'])
-        self.fc.b = dl.Tensor.from_numpy(data['fc_b'])
+        self.conv1.W = dl.Tensor.from_numpy(data['conv1_W'])
+        self.conv1.b = dl.Tensor.from_numpy(data['conv1_b'])
+        self.conv2.W = dl.Tensor.from_numpy(data['conv2_W'])
+        self.conv2.b = dl.Tensor.from_numpy(data['conv2_b'])
+        self.fc1.W = dl.Tensor.from_numpy(data['fc1_W'])
+        self.fc1.b = dl.Tensor.from_numpy(data['fc1_b'])
+        self.fc2.W = dl.Tensor.from_numpy(data['fc2_W'])
+        self.fc2.b = dl.Tensor.from_numpy(data['fc2_b'])
         print(f"Weights loaded from {path}")
 
     def print_stats(self):
-        """Bonus A: Compute and print FLOPs, MACs, and Parameter counts."""
+        """Compute and print FLOPs, MACs, and Parameter counts."""
         print("\n" + "="*40)
-        print("          Model Statistics          ")
+        print("          Model Statistics (2-Conv)          ")
         print("="*40)
         
-        total_params = 0
-        total_macs = 0
-        total_flops = 0
+        # Conv1: (3->32, 3x3, output 32x32)
+        conv1_params = (3 * 3 * 3 + 1) * 32
+        conv1_macs = (32 * 32 * 32) * (3 * 3 * 3)
         
-        # --- Layer 1: Conv2D (3, 16, 3, 1, 1) ---
-        # Input: [3, 32, 32] -> Output: [16, 32, 32]
-        k = 3
-        cin = 3
-        cout = 16
-        h_out, w_out = 32, 32
+        # Conv2: (32->64, 3x3, output 16x16)
+        conv2_params = (3 * 3 * 32 + 1) * 64
+        conv2_macs = (16 * 16 * 64) * (3 * 3 * 32)
         
-        # Params: (k*k*cin + 1) * cout
-        conv_params = (k * k * cin + 1) * cout
+        # FC1: (4096->256)
+        fc1_params = (4096 + 1) * 256
+        fc1_macs = 4096 * 256
         
-        # MACs: h_out * w_out * k * k * cin * cout
-        conv_macs = h_out * w_out * k * k * cin * cout
+        # FC2: (256->num_classes)
+        num_classes = self.num_classes
+        fc2_params = (256 + 1) * num_classes
+        fc2_macs = 256 * num_classes
         
-        # FLOPs: approx 2 * MACs (multiply + add)
-        conv_flops = 2 * conv_macs
+        total_params = conv1_params + conv2_params + fc1_params + fc2_params
+        total_macs = conv1_macs + conv2_macs + fc1_macs + fc2_macs
+        total_flops = 2 * total_macs
         
-        total_params += conv_params
-        total_macs += conv_macs
-        total_flops += conv_flops
-        
-        print(f"Conv2D:")
-        print(f"  Params: {conv_params:,}")
-        print(f"  MACs:   {conv_macs:,}")
-        print(f"  FLOPs:  {conv_flops:,}")
-
-        # --- Activation: ReLU ---
-        # Input: [16, 32, 32]
-        # FLOPs: 1 comparison per element
-        relu_flops = 16 * 32 * 32
-        total_flops += relu_flops
-        
-        # --- Pooling: MaxPool2D (2, 2) ---
-        # Input: [16, 32, 32] -> Output: [16, 16, 16]
-        # FLOPs: 1 comparison per element of input (roughly)
-        pool_flops = 16 * 32 * 32
-        total_flops += pool_flops
-
-        # --- Layer 2: Linear (4096 -> 10) ---
-        fin = 4096
-        fout = 10
-        
-        # Params: (fin + 1) * fout
-        fc_params = (fin + 1) * fout
-        
-        # MACs: fin * fout
-        fc_macs = fin * fout
-        
-        # FLOPs: 2 * MACs
-        fc_flops = 2 * fc_macs
-        
-        total_params += fc_params
-        total_macs += fc_macs
-        total_flops += fc_flops
-
-        print(f"Linear:")
-        print(f"  Params: {fc_params:,}")
-        print(f"  MACs:   {fc_macs:,}")
-        print(f"  FLOPs:  {fc_flops:,}")
-        
+        print(f"Conv1 (3->32):    Params: {conv1_params:,}")
+        print(f"Conv2 (32->64):   Params: {conv2_params:,}")
+        print(f"FC1 (4096->256):  Params: {fc1_params:,}")
+        print(f"FC2 (256->{num_classes}):  Params: {fc2_params:,}")
         print("-" * 40)
-        print(f"TOTAL PARAMS: {total_params:,}")
-        print(f"TOTAL MACs:   {total_macs:,}")
-        print(f"TOTAL FLOPs:  {total_flops:,}")
+        print(f"TOTAL PARAMS:  {total_params:,}")
+        print(f"TOTAL MACs:    {total_macs:,}")
+        print(f"TOTAL FLOPs:   {total_flops:,}")
         print("="*40 + "\n")

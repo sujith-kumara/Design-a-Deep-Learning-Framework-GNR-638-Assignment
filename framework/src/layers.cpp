@@ -14,8 +14,13 @@ Conv2D::Conv2D(int in_channels, int out_channels, int kernel_size, int stride,
     w_size *= s;
 
   std::vector<float> w_data(w_size);
-  std::mt19937 gen(42); // Fixed seed for reproducibility
-  std::uniform_real_distribution<float> dist(-0.1f, 0.1f);
+  std::mt19937 gen(42);
+
+  // Kaiming (He) Initialization: Normal(0, sqrt(2/fan_in))
+  float fan_in = (float)(in_channels * kernel_size * kernel_size);
+  float std_dev = std::sqrt(2.0f / fan_in);
+  std::normal_distribution<float> dist(0.0f, std_dev);
+
   for (size_t i = 0; i < w_size; ++i) {
     w_data[i] = dist(gen);
   }
@@ -61,7 +66,12 @@ Linear::Linear(int in_features, int out_features) {
 
   std::vector<float> w_data(w_size);
   std::mt19937 gen(42);
-  std::uniform_real_distribution<float> dist(-0.1f, 0.1f);
+
+  // Kaiming (He) Initialization
+  float fan_in = (float)in_features;
+  float std_dev = std::sqrt(2.0f / fan_in);
+  std::normal_distribution<float> dist(0.0f, std_dev);
+
   for (size_t i = 0; i < w_size; ++i) {
     w_data[i] = dist(gen);
   }

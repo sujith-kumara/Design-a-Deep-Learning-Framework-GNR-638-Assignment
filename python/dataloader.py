@@ -17,11 +17,18 @@ except ImportError:
     dl = None
 
 class DataLoader:
-    def __init__(self, root_dir, batch_size=32, target_size=(32, 32), shuffle=True):
+    def __init__(self, root_dir, batch_size=32, target_size=(32, 32), shuffle=True, 
+                 val_split=0.0, test_split=0.0, seed=42):
+        init_start_time = time.time()
+        
         self.root_dir = root_dir
         self.batch_size = batch_size
         self.target_size = target_size
         self.shuffle = shuffle
+        self.val_split = val_split
+        self.test_split = test_split
+        self.seed = seed
+        self.mode = 'train'  # Default mode
         
         # Discover classes and images
         self.classes = sorted([d for d in os.listdir(root_dir) if os.path.isdir(os.path.join(root_dir, d)) and not d.startswith('.')])
@@ -36,21 +43,63 @@ class DataLoader:
         
         if not self.samples:
             raise ValueError(f"No PNG images found in {root_dir}")
-            
-        print(f"Found {len(self.samples)} images across {len(self.classes)} classes.")
+        
+        # Split into train, validation, and test
+        total_samples = len(self.samples)
+        np.random.seed(self.seed)
+        indices = np.random.permutation(total_samples)
+        
+        test_size = int(total_samples * self.test_split)
+        val_size = int(total_samples * self.val_split)
+        
+        self.test_indices = indices[:test_size]
+        self.val_indices = indices[test_size:test_size + val_size]
+        self.train_indices = indices[test_size + val_size:]
+        
+        self.loading_time = time.time() - init_start_time
+        print(f"Found {total_samples} images across {len(self.classes)} classes.")
+        if self.val_split > 0 or self.test_split > 0:
+            print(f"Split: Train={len(self.train_indices)}, Val={len(self.val_indices)}, Test={len(self.test_indices)} (seed={self.seed})")
+        print(f"Dataset initialized in {self.loading_time:.4f} seconds.")
+    
+    def set_mode(self, mode='train'):
+        """Set whether to use training, validation, or test data."""
+        valid_modes = ['train', 'val', 'validation', 'test']
+        if mode not in valid_modes:
+            raise ValueError(f"Invalid mode: {mode}. Must be one of {valid_modes}")
+        
+        if mode == 'validation': mode = 'val'
+        self.mode = mode
 
     def __len__(self):
-        return (len(self.samples) + self.batch_size - 1) // self.batch_size
+        if self.mode == 'test':
+            active_indices = self.test_indices
+        elif self.mode == 'val':
+            active_indices = self.val_indices
+        else:
+            active_indices = self.train_indices
+        return (len(active_indices) + self.batch_size - 1) // self.batch_size
 
     def __iter__(self):
         start_time = time.time()
         
-        indices = np.arange(len(self.samples))
-        if self.shuffle:
-            np.random.shuffle(indices)
+        # Determine which indices to use
+        if self.mode == 'test':
+            active_indices = self.test_indices.copy()
+        elif self.mode == 'val':
+            active_indices = self.val_indices.copy()
+        else:
+            active_indices = self.train_indices.copy()
+        
+        # Set seed for reproducibility
+        np.random.seed(self.seed)
+        
+        if self.shuffle and self.mode == 'train':
+            # Only shuffle training data
+            np.random.shuffle(active_indices)
             
-        for i in range(0, len(indices), self.batch_size):
-            batch_indices = indices[i:i + self.batch_size]
+        for i in range(0, len(active_indices), self.batch_size):
+            batch_indices = active_indices[i:i + self.batch_size]
             batch_samples = [self.samples[idx] for idx in batch_indices]
             
             batch_start = time.time()

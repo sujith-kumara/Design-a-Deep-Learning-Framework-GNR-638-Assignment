@@ -1,63 +1,43 @@
-# DeepLearn Framework
+# GNR 638 Assignment 1: Deep Learning Framework
 
-A C++ deep learning framework with Python bindings and a custom autograd engine.
+This is a custom deep learning framework built from scratch with a C++ backend and Python bindings.
 
-## Features
-- **C++ Core**: Functional implementation of Tensors, Layers (Linear, Conv2D, MaxPool2D), and Optimizers (SGD).
-- **Autograd Engine**: Automatic differentiation supports complex graphs.
-- **Python Bindings**: Exposed via pybind11 for easy experimentation in Python.
-- **Fast DataLoader**: Efficiently loads PNG datasets (e.g., CIFAR-like structures) using OpenCV.
+## 🚀 How to Run (Local)
 
-## Prerequisites
-- CMake (>= 3.10)
-- Core development tools (g++, make)
-- Python 3 with `numpy`, `opencv-python`, and `pybind11`
-
-## Building the Framework
+### 1. Build the Framework
 ```bash
 mkdir build && cd build
-cmake ..
-make -j4
+cmake .. && make
+cd ..
 ```
 
-## Running the Model
+### 2. Run Training
+Use the provided scripts for easy execution:
+- **Dataset 1:** `./scripts/run_data_1.sh`
+- **Dataset 2:** `./scripts/run_data_2.sh`
 
-The framework currently supports training a CNN (Conv -> ReLU -> MaxPool -> Linear) on the provided datasets.
+### 3. Run Evaluation
+- **Dataset 1:** `./scripts/evaluate_data_1.sh`
+- **Dataset 2:** `./scripts/evaluate_data_2.sh`
 
-### 1. Training
-The training script supports command-line arguments to specify the dataset, number of epochs, and output path for weights.
+---
 
-**Train on Dataset 1:**
+## 📓 How to Run (Jupyter / Google Colab)
+
+1. Open **`training_demo.ipynb`**.
+2. Run the cells sequentially to:
+   - Check system information.
+   - Build the C++ framework.
+   - Execute a mini-verification training.
+
+---
+
+## 🛠️ Prerequisites
 ```bash
-python python/train.py --dataset data_1 --epochs 20 --save_path cnn_weights_data1.npz
+pip install numpy opencv-python-headless pybind11
 ```
 
-**Train on Dataset 2:**
-```bash
-python python/train.py --dataset data_2 --epochs 20 --save_path cnn_weights_data2.npz
-```
-
-**General Usage:**
-```bash
-python python/train.py --dataset <DATASET_PATH> --epochs <NUM_EPOCHS> --save_path <OUTPUT_PATH>
-```
-
-### 2. Evaluation
-After training, run the evaluation script to check accuracy on the dataset and measure inference performance.
-
-```bash
-python3 python/test.py
-```
-
-## Dataset Structure
-The DataLoader expects datasets in a folder structure where each subdirectory represents a class name containing PNG images:
-```text
-data_x/
-├── class_1/
-│   ├── img1.png
-│   └── ...
-├── class_2/
-│   ├── img1.png
-│   └── ...
-└── ...
-```
+## 📊 Model Performance (2-Conv)
+- **Epoch Time:** ~40 minutes
+- **Train Accuracy:** ~76% (Dataset 1)
+- **Target Epoch Limit:** < 3 Hours (Met)

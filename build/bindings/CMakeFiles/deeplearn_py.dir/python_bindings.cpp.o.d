@@ -330,11 +330,6 @@ bindings/CMakeFiles/deeplearn_py.dir/python_bindings.cpp.o: \
   /opt/anaconda3/include/python3.12/cpython/bytesobject.h \
   /opt/anaconda3/include/python3.12/unicodeobject.h \
   /opt/anaconda3/include/python3.12/cpython/unicodeobject.h \
-  /opt/anaconda3/include/python3.12/cpython/initconfig.h \
-  /opt/anaconda3/include/python3.12/pystate.h \
-  /opt/anaconda3/include/python3.12/cpython/pystate.h \
-  /opt/anaconda3/include/python3.12/pyerrors.h \
-  /opt/anaconda3/include/python3.12/cpython/pyerrors.h \
   /opt/anaconda3/include/python3.12/longobject.h \
   /opt/anaconda3/include/python3.12/cpython/longobject.h \
   /opt/anaconda3/include/python3.12/cpython/longintrepr.h \
@@ -372,6 +367,9 @@ bindings/CMakeFiles/deeplearn_py.dir/python_bindings.cpp.o: \
   /opt/anaconda3/include/python3.12/sliceobject.h \
   /opt/anaconda3/include/python3.12/cpython/cellobject.h \
   /opt/anaconda3/include/python3.12/iterobject.h \
+  /opt/anaconda3/include/python3.12/cpython/initconfig.h \
+  /opt/anaconda3/include/python3.12/pystate.h \
+  /opt/anaconda3/include/python3.12/cpython/pystate.h \
   /opt/anaconda3/include/python3.12/cpython/genobject.h \
   /opt/anaconda3/include/python3.12/descrobject.h \
   /opt/anaconda3/include/python3.12/cpython/descrobject.h \
@@ -384,6 +382,8 @@ bindings/CMakeFiles/deeplearn_py.dir/python_bindings.cpp.o: \
   /opt/anaconda3/include/python3.12/cpython/picklebufobject.h \
   /opt/anaconda3/include/python3.12/cpython/pytime.h \
   /opt/anaconda3/include/python3.12/codecs.h \
+  /opt/anaconda3/include/python3.12/pyerrors.h \
+  /opt/anaconda3/include/python3.12/cpython/pyerrors.h \
   /opt/anaconda3/include/python3.12/pythread.h \
   /opt/anaconda3/include/python3.12/cpython/pythread.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/pthread.h \

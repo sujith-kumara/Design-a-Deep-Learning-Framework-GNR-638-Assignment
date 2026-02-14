@@ -3,7 +3,7 @@
 
 namespace dl {
 
-// Placeholder for neural network layers
+// Neural network layer abstractions
 class Layer {
 public:
   virtual ~Layer() = default;

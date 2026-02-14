@@ -3,7 +3,7 @@
 
 namespace dl {
 
-// Placeholder for loss functions
+// Loss function implementations
 class Loss {
 public:
   virtual ~Loss() = default;

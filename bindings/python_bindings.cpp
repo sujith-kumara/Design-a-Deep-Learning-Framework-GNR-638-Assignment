@@ -57,14 +57,27 @@ Tensor tensor_from_numpy(py::array_t<float> arr) {
 PYBIND11_MODULE(deeplearn, m) {
   m.doc() = "DeepLearn Framework - A simple deep learning framework in C++";
 
+  // ==================== Enums ====================
+  py::enum_<dl::Device>(m, "Device")
+      .value("CPU", dl::Device::CPU)
+      .value("GPU", dl::Device::GPU)
+      .export_values();
+
   // ==================== Tensor Class ====================
   py::class_<dl::Tensor>(m, "Tensor")
       .def(py::init<>(), "Create an empty tensor")
-      .def(py::init<const std::vector<int> &>(), py::arg("shape"),
-           "Create a tensor with given shape")
-      .def(py::init<const std::vector<int> &, const std::vector<float> &>(),
+      .def(py::init<const std::vector<int> &, dl::Device>(), py::arg("shape"),
+           py::arg("device") = dl::Device::CPU,
+           "Create a tensor with given shape and device")
+      .def(py::init<const std::vector<int> &, const std::vector<float> &,
+                    dl::Device>(),
            py::arg("shape"), py::arg("data"),
-           "Create a tensor with given shape and data")
+           py::arg("device") = dl::Device::CPU,
+           "Create a tensor with given shape, data, and device")
+
+      // Device management
+      .def("to", &dl::Tensor::to, py::arg("device"), "Move tensor to device")
+      .def("device", &dl::Tensor::device, "Get tensor device")
 
       // Factory methods
       .def_static("from_numpy", &dl::tensor_from_numpy, py::arg("array"),

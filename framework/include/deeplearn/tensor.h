@@ -8,14 +8,19 @@
 
 namespace dl {
 
-class SGD; // Forward declaration
+enum class Device { CPU, GPU };
 
 class Tensor {
 public:
   Tensor();
-  explicit Tensor(const std::vector<int> &shape);
-  Tensor(const std::vector<int> &shape, const std::vector<float> &data);
+  explicit Tensor(const std::vector<int> &shape, Device device = Device::CPU);
+  Tensor(const std::vector<int> &shape, const std::vector<float> &data,
+         Device device = Device::CPU);
   ~Tensor();
+
+  // Device management
+  Tensor to(Device device);
+  Device device() const { return _device; }
 
   // Copy/Move semantics
   Tensor(const Tensor &other);
@@ -57,6 +62,12 @@ public:
   float &operator()(const std::vector<int> &indices);
   float operator()(const std::vector<int> &indices) const;
 
+  // Faster access for internal loops
+  float &operator[](size_t index) { return _data[index]; }
+  const float &operator[](size_t index) const { return _data[index]; }
+  float *data_ptr() { return _data.data(); }
+  const float *data_ptr() const { return _data.data(); }
+
   // Autograd members
   bool requires_grad{false};
   Tensor *grad{nullptr};
@@ -71,6 +82,7 @@ private:
   std::vector<float> _data;
   std::vector<int> _shape;
   std::vector<size_t> _max_indices; // Added for maxpool backward
+  Device _device{Device::CPU};
 
   size_t get_flat_index(const std::vector<int> &indices) const;
 };
