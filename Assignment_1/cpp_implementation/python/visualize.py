@@ -4,6 +4,8 @@ import os
 import sys
 import cv2
 import pickle
+import zlib
+import struct
 
 # Add build directory to path
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -14,8 +16,39 @@ if build_dir not in sys.path:
 import deeplearn as dl
 from model import SimpleCNN
 
+def write_png(buf, width, height, is_color=False):
+    """Pure Python PNG writer using zlib/struct (No NumPy)."""
+    # buf is a list of [R,G,B] or grayscale [I]
+    mode = 3 if is_color else 0 # 0=Grayscale, 3=Indexed/Palette not used, 2=RGB
+    # We'll use RGB (color_type 2) or Grayscale (color_type 0)
+    color_type = 2 if is_color else 0
+    bit_depth = 8
+    
+    # PNG signature
+    png_sig = b'\x89PNG\r\n\x1a\n'
+    
+    # IHDR chunk
+    ihdr_data = struct.pack(">IIBBBBB", width, height, bit_depth, color_type, 0, 0, 0)
+    def make_chunk(tag, data):
+        return struct.pack(">I", len(data)) + tag + data + struct.pack(">I", zlib.crc32(tag + data) & 0xffffffff)
+    
+    ihdr = make_chunk(b"IHDR", ihdr_data)
+    
+    # IDAT chunk (pixel data)
+    # Each row must start with a filter type byte (0)
+    stride = width * (3 if is_color else 1)
+    rows = []
+    for i in range(height):
+        row_data = bytes(buf[i*stride : (i+1)*stride])
+        rows.append(b'\x00' + row_data)
+    
+    idat = make_chunk(b"IDAT", zlib.compress(b"".join(rows)))
+    iend = make_chunk(b"IEND", b"")
+    
+    return png_sig + ihdr + idat + iend
+
 def save_feature_maps(activations_list, shape, save_dir, layer_name):
-    """Save feature maps as images. activations_list is flat."""
+    """Save feature maps as PNG images. activations_list is flat."""
     os.makedirs(save_dir, exist_ok=True)
     
     # shape: [batch, channels, height, width]
@@ -25,44 +58,33 @@ def save_feature_maps(activations_list, shape, save_dir, layer_name):
     for i in range(min(c, 32)):  # Save first 32 channels
         channel_data = activations_list[i*(h*w) : (i+1)*(h*w)]
         
-        # Normalize to [0, 255] manually
         if not channel_data: continue
         c_min = min(channel_data)
         c_max = max(channel_data)
         denom = (c_max - c_min) + 1e-8
         
-        # Reconstruct 2D image for OpenCV
-        # This is a bit slow in pure Python but OK for visualization
-        img_data = []
-        for row in range(h):
-            img_row = []
-            for col in range(w):
-                val = channel_data[row*w + col]
-                norm_val = int(255 * (val - c_min) / denom)
-                img_row.append(min(255, max(0, norm_val)))
-            img_data.append(img_row)
+        # Build 1D list of normalized pixels [0, 255]
+        pixels = [int(255 * (val - c_min) / denom) for val in channel_data]
         
-        # Convert to a format cv2 understands (list of lists works if passed as list of lists of uint8)
-        # However, for simplicity and speed, we can build a raw byte string or similar
-        # but the easiest way is just to use standard library or cv2's ability to take nested lists
-        # in recent versions, but it's safer to use dummy array if allowed or just avoid.
-        # Wait, cv2.imwrite needs an array-like. Since NumPy is banned, we have to be careful.
-        # If cv2 is allowed for "loading and basic image processing", maybe it's fine?
-        # Let's try to use a dummy image and fill it.
-        
-        # Actually, let's use standard Python's array or similar? No, just use cv2's from_buffer if possible
-        # or just avoid saving if it's too hard without NumPy. 
-        # But if user wants visualization, we should try.
-        
-        # Let's use a simple approach: build a PGM or PPM file manually?
-        # That's 100% standard library.
-        save_path_pgm = os.path.join(save_dir, f"{layer_name}_channel_{i:02d}.pgm")
-        with open(save_path_pgm, 'w') as f:
-            f.write(f"P2\n{w} {h}\n255\n")
-            for row in img_data:
-                f.write(" ".join(map(str, row)) + "\n")
+        # 1. Save Grayscale PNG
+        save_path_png = os.path.join(save_dir, f"{layer_name}_channel_{i:02d}.png")
+        with open(save_path_png, 'wb') as f:
+            f.write(write_png(pixels, w, h, is_color=False))
+
+        # 2. Save Heatmap PNG (JET-like)
+        heatmap_pixels = []
+        for val in pixels:
+            # R: high for high val, G: high for mid val, B: high for low val
+            r = min(255, max(0, int(255 * (val - 128) / 128 * 2))) if val > 128 else 0
+            g = min(255, int(255 * (1 - abs(val - 128) / 128)))
+            b = min(255, max(0, int(255 * (128 - val) / 128 * 2))) if val < 128 else 0
+            heatmap_pixels.extend([r, g, b])
+            
+        save_path_heatmap = os.path.join(save_dir, f"{layer_name}_channel_{i:02d}_heatmap.png")
+        with open(save_path_heatmap, 'wb') as f:
+            f.write(write_png(heatmap_pixels, w, h, is_color=True))
                 
-    print(f"✓ Saved {min(c, 32)} feature maps to {save_dir} as PGM files")
+    print(f"✓ Saved {min(c, 32)} PNG feature maps and heatmaps to {save_dir}")
 
 def visualize_model(args):
     weights_path = args.weights

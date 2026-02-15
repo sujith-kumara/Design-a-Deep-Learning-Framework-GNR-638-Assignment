@@ -6,32 +6,35 @@ This is a custom deep learning framework built from scratch with a C++ backend a
 - `Assignment_1/data_x`: Datasets
 - `Assignment_1/cpp_implementation`: Core framework, bindings, and scripts
 
-## How to Run
+## How to Run (from the Project Root)
 
 ### 1. Build the Framework
-All build commands must be run from within the `cpp_implementation` folder:
+Run these commands from your terminal (starting in `assignment_github_folder`):
 ```bash
 cd Assignment_1/cpp_implementation
 mkdir -p build && cd build
 cmake ..
 make -j4
-cd ..
+cd ../../../  # Back to root
 ```
 
 ### 2. Run Training
-Run these from the `Assignment_1/cpp_implementation` directory:
-- **Dataset 1:** `./scripts/run_data_1.sh`
-- **Dataset 2:** `./scripts/run_data_2.sh`
-- **Setup & Run:** `./setup_and_run.sh`
+Available scripts (run from the root directory):
+- **Dataset 1:** `./Assignment_1/cpp_implementation/scripts/run_data_1.sh`
+- **Dataset 2:** `./Assignment_1/cpp_implementation/scripts/run_data_2.sh`
+- **Interactive:** `./Assignment_1/cpp_implementation/setup_and_run.sh`
 
 ### 3. Run Evaluation
-- **Dataset 1:** `./scripts/evaluate_data_1.sh`
-- **Dataset 2:** `./scripts/evaluate_data_2.sh`
+- **Dataset 1:** `./Assignment_1/cpp_implementation/scripts/evaluate_data_1.sh`
+- **Dataset 2:** `./Assignment_1/cpp_implementation/scripts/evaluate_data_2.sh`
 
 ### 4. Visualization
 To visualize feature maps (requires saved weights):
 ```bash
-python3 python/visualize.py --image ../data_1/Abyssinian/Image_1.png --weights python/cnn_weights.pkl
+python3 Assignment_1/cpp_implementation/python/visualize.py \
+    --image "Assignment_1/data_1/0/Image 1.png" \
+    --weights Assignment_1/cpp_implementation/cnn_weights.pkl \
+    --output Assignment_1/cpp_implementation/visualizations
 ```
 
 ---
@@ -42,9 +45,5 @@ python3 python/visualize.py --image ../data_1/Abyssinian/Image_1.png --weights p
 - `pybind11` (for C++ bindings)
 - `cmake` (for building)
 
-*Note: NumPy is strictly prohibited and has been completely removed.*
 
-## 📊 Model Performance (2-Conv)
-- **Epoch Time:** ~40-50 minutes (on CPU)
-- **Train Accuracy:** ~75-80% (Dataset 1)
-- **Target Epoch Limit:** < 3 Hours (Met)
+
