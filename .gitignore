@@ -23,3 +23,7 @@ venv/
 # OS
 .DS_Store
 Thumbs.db
+
+# Large Datasets
+*.rar
+*.mat
