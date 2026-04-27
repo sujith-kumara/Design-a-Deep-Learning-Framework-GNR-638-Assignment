@@ -1,0 +1,51 @@
+question_id,question,option1,option2,option3,option4,ground_truth
+Q01,Which large water body is located in the northern part of the map?,Powai Lake,Vihar Lake,Tulsi Lake,Mithi River,B
+Q02,IIT Bombay is located in which direction relative to Powai Lake?,South,West,North-East,North-West,C
+Q03,Which major road runs horizontally across the upper-middle section of the map?,Sahar Elevated Road,JVLR,Western Express Highway,Adi Sankaracharya Marg,B
+Q04,The Aarey Metro Depot is situated near which corner of the map?,Top-Left,Top-Right,Bottom-Left,Bottom-Right,A
+Q05,Which landmark is closest to the bottom-left corner of the map?,IIT Bombay,Sahar International Airport (Terminal 2),Vihar Lake,SEEPZ,B
+Q06,Adi Sankaracharya Marg curves along the southern border of which feature?,Vihar Lake,Powai Lake,Aarey Colony,IIT Bombay,B
+Q07,Which industrial area is located to the west of Powai Lake?,SEEPZ,BKC,MIDC,Aarey,A
+Q08,Vihar Lake Dam is located near which of the following?,Sahar Terminal,Vihar Lake,IIT Bombay,Aarey Metro Depot,B
+Q09,Which road connects the airport area to the eastern parts of the map?,Sahar Elevated Road,JVLR,Central Avenue,Marol Pipeline Road,A
+Q10,The National Institute of Industrial Engineering (NITIE) is located near which lake?,Powai Lake,Vihar Lake,Tulsi Lake,Upvan Lake,B
+Q11,Which of the following is located North of JVLR?,Sahar Terminal 2,IIT Bombay,Marol Village,Saki Naka,B
+Q12,Is SEEPZ located East or West of the Mithi River section shown?,East,West,North,South,B
+Q13,Which landmark is situated between Vihar Lake and Powai Lake?,NITIE,IIT Bombay,Terminal 2,SEEPZ,A
+Q14,Central Avenue is a major road inside which campus?,NITIE,IIT Bombay,Aarey,SEEPZ,B
+Q15,Which metro station/depot is visible in the top-left quadrant?,Saki Naka,Aarey Metro Depot,Marol Naka,Airport Road,B
+Q16,Marol Village is located in which direction from the Sahar Airport Terminal?,North,South-East,West,South,A
+Q17,What feature is immediately East of the Sahar Elevated Road?,Mithi River,IIT Bombay,Terminal 2,Marol Pipeline,A
+Q18,Larsen & Toubro (L&T) Flyover is part of which major road intersection area?,JVLR,Sahar Road,Maroshi Road,Aarey Road,A
+Q19,Saki Naka is located in which part of the map?,Top,Bottom-Center,Right,Left,B
+Q20,Which of these is NOT a lake shown on the map?,Powai Lake,Vihar Lake,Pashan Lake,All are shown,C
+Q21,The 'Tunga Village' area is located South of which lake?,Vihar Lake,Powai Lake,Tulsi Lake,None,B
+Q22,In which direction does the Mithi River primarily flow in this map section?,North to South,East to West,South to North,West to East,A
+Q23,Which area is known for 'Water Filtration' facilities near Vihar Lake?,Filter Pada,Saki Naka,Marol,SEEPZ,A
+Q24,Which road passess through the Aarey Colony area?,JVLR,Maroshi Road,Central Avenue,Adi Sankaracharya Marg,B
+Q25,Chandivali is located in which direction from Powai Lake?,North,South-West,East,West,B
+Q26,Which landmark is located at the coordinates (Top-Right)?,Aarey Metro,IIT Bombay,Terminal 2,Saki Naka,B
+Q27,The 'Sahar Elevated Road' primarily services which infrastructure?,Railway Station,International Airport,Port,Bus Terminus,B
+Q28,Maroshi Naka is located in which quadrant?,Top-Left,Top-Right,Bottom-Left,Bottom-Right,A
+Q29,Which marg curves around the South side of Powai Lake?,Adi Sankaracharya Marg,Central Avenue,JVLR,Sahar Road,A
+Q30,Vihar Lake is larger than Powai Lake in this map view?,Yes,No,They are equal,Not visible,A
+Q31,The 'Sahar International Airport' is also known as?,CSMI Airport,Juhu Airport,Pune Airport,None,A
+Q32,What is located North-West of Powai Lake?,Aarey Colony,IIT Bombay,Saki Naka,Terminal 2,A
+Q33,Marol Pipeline Road runs parallel to which direction mainly?,North-South,East-West,Circular,None,A
+Q34,Which area is famous for 'Industrial Engineering' in the map?,IIT,NITIE,SEEPZ,MIDC,B
+Q35,Is JVLR south of Vihar Lake?,Yes,No,It intersects it,None,A
+Q36,Which road leads to 'Terminal 2' from the East?,Marol Pipeline Road,Sahar Elevated Road,JVLR,Adi Sankaracharya Marg,B
+Q37,IIT Bombay is adjacent to which lake?,Vihar Lake,Powai Lake,Tulsi Lake,Mithi Lake,B
+Q38,The 'Paspoli Village' is located near which of the following?,IIT Bombay,Sahar Terminal,Filter Pada,Aarey Metro,A
+Q39,Which road is likely to have 'Aarey Colony Road' name in top-left?,JVLR,Maroshi Road,Sahar Road,Central Avenue,B
+Q40,What is the relative position of Saki Naka to Chandivali?,North,South,East,West,B
+Q41,Terminal 1 is visible on this map?,Yes,No,Only partially,None,B
+Q42,Which flyover is located near the middle-left of the map?,L&T Flyover,Sahar Flyover,JVLR Flyover,None,A
+Q43,The 'Powai Lake' is connected to Mithi River?,Yes,No,By a pipe,None,A
+Q44,Which landmark is most 'Eastern' on the map?,Aarey Metro,IIT Bombay,Sahar Terminal,SEEPZ,B
+Q45,Which landmark is most 'Western' on the map?,IIT Bombay,Aarey Metro,SEEPZ,Sahar Terminal,B
+Q46,Is JVLR north of Sahar Elevated Road?,Yes,No,They are same,None,A
+Q47,Which margin of the map contains 'Durganagar'?,Top-Left,Top-Right,Bottom-Left,Bottom-Right,A
+Q48,The 'Vihar Lake Dam' is at which end of Vihar Lake?,North,South,East,West,B
+Q49,Which village is between Maroshi and Paspoli?,Filter Pada,Marol,Tunga,None,D
+Q50,What is the color of Powai Lake in the map?,Green,Blue/Cyan,Gray,Red,B

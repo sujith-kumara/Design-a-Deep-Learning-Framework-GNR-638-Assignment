@@ -1,0 +1,11 @@
+
+numpy
+opencv-python-headless
+Pillow
+pandas
+torch
+transformers
+timm
+torchvision
+accelerate
+bitsandbytes

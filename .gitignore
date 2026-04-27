@@ -27,3 +27,9 @@ Thumbs.db
 # Large Datasets
 *.rar
 *.mat
+Assignment 2 Datasets/
+**/dataset/
+**/dataset_extracted/
+sujith/dataset/
+sujith/my_implementation/
+sujith/original_implementation/
