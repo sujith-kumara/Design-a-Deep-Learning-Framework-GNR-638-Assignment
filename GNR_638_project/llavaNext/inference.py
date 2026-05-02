@@ -225,8 +225,9 @@ def load_model():
     return processor, model
 
 def answer_question(processor, model, image: Image.Image, question: str, options: list) -> str:
-    valid = [(str(i+1), opt) for i, opt in enumerate(options) if pd.notna(opt) and str(opt).strip() != ""]
-    options_text = "\n".join([f"{num}) {opt}" for num, opt in valid])
+    letters = ['A', 'B', 'C', 'D', 'E']
+    valid = [(letters[i], opt) for i, opt in enumerate(options) if pd.notna(opt) and str(opt).strip() != ""]
+    options_text = "\n".join([f"{letter}) {opt}" for letter, opt in valid])
     
     prompt_text = (
     f"You are a precise visual reasoning AI analyzing an OpenStreetMap image.\n\n"
@@ -243,9 +244,9 @@ def answer_question(processor, model, image: Image.Image, question: str, options
     f"3. Base your answer only on clearly visible evidence.\n"
     f"4. Keep reasoning brief.\n"
     f"5. Eliminate incorrect options.\n"
-    f"6. If uncertain, choose 5.\n\n"
+    f"6. If uncertain, choose E.\n\n"
     f"OUTPUT FORMAT:\n"
-    f"Final Answer: [Number]"
+    f"Final Answer: [Letter]"
     )
     
     conversation = [
@@ -257,24 +258,23 @@ def answer_question(processor, model, image: Image.Image, question: str, options
 
     output = model.generate(
         **inputs, 
-        max_new_tokens=250, 
+        max_new_tokens=350, 
         do_sample=False,   
         pad_token_id=processor.tokenizer.eos_token_id
     )
     
     generated_text = processor.decode(output[0][inputs.input_ids.shape[1]:], skip_special_tokens=True).strip()
-    match = re.search(r'Final Answer:\s*([1-5])', generated_text, re.IGNORECASE)
+    match = re.search(r'Final Answer:\s*([A-E])', generated_text, re.IGNORECASE)
     
     if match:
-        pred_num = match.group(1)
+        pred_letter = match.group(1).upper()
     else:
-        fallback_match = re.findall(r'\b([1-5])\b', generated_text)
-        if fallback_match:
-            pred_num = fallback_match[-1]
-        else:
-            pred_num = "5"
-            
-    print(f"\n[Reasoning]: {generated_text.replace(chr(10), ' ')}") 
+        pred_letter = "E" # Fallback
+        
+    # 3. Translate the Letter back to the Number you need for your CSV!
+    letter_to_num = {'A': '1', 'B': '2', 'C': '3', 'D': '4', 'E': '5'}
+    pred_num = letter_to_num.get(pred_letter, '5')
+    
     return pred_num
 
 def run_pipeline(image_path: str, csv_path: str, output_path: str):
