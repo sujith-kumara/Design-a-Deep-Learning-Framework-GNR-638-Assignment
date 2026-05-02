@@ -218,7 +218,7 @@ def load_model():
     model = LlavaNextForConditionalGeneration.from_pretrained(
         MODEL_NAME, 
         torch_dtype=torch.float16,
-        quantization_config=quantization_config,
+#        quantization_config=quantization_config,
         low_cpu_mem_usage=True,
         device_map="auto" 
     )
@@ -295,7 +295,7 @@ def run_pipeline(image_path: str, csv_path: str, output_path: str):
         num_ans = answer_question(processor, model, image, row["question"], options)
         print(f"[{idx+1:02d}] pred={num_ans}")
         
-        question_id = row["question_id"]
+        question_id = f"ques_{row['question_id']}" if str(row["question_id"]).isdigit() else str(row["question_id"])
         results.append({
             "id": question_id, 
             "question_num": question_id,
