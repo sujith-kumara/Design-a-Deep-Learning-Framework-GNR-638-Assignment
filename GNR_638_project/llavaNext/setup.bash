@@ -1,77 +1,53 @@
-#!/usr/bin/env bash
-
-# Exit immediately on errors, treat unset variables as errors, catch pipeline failures
+#!/bin/bash
 set -e
-set -u
-set -o pipefail
 
-echo "======================================================================"
-echo "Starting Automated Setup for GNR Project"
-echo "Target: Linux, CUDA 12.6, L40s (48GB VRAM)"
-echo "======================================================================"
+echo "========================================"
+echo "🚀 Starting Server Setup for VQA_OSM..."
+echo "========================================"
 
-# ==============================================================================
-# 1. SYSTEM DEPENDENCIES (Critical for OpenCV on headless Linux)
-# ==============================================================================
-echo "[1/3] Checking System Dependencies..."
-if command -v apt-get &> /dev/null; then
-    SUDO=""
-    if command -v sudo &> /dev/null; then SUDO="sudo"; fi
-    if ! dpkg -l | grep -q libgl1-mesa-glx; then
-        echo "Installing libGL for OpenCV..."
-        $SUDO apt-get update -yqq
-        $SUDO apt-get install -yqq libgl1-mesa-glx libglib2.0-0
-    else
-        echo "System dependencies already met."
-    fi
-else
-    echo "Warning: apt-get not found. Assuming system dependencies (libGL) are met."
-fi
+echo "📥 1. Fetching repository files..."
+REPO_URL="https://github.com/anuroopck/VQA_OSM.git"
 
-# ==============================================================================
-# 2. CONDA ENVIRONMENT CREATION
-# ==============================================================================
-ENV_NAME="gnr_project_env"
+git clone "$REPO_URL" .temp_repo
 
-echo "[2/3] Managing Conda Environment: $ENV_NAME..."
-eval "$(conda shell.bash hook)"
+rm -rf .temp_repo/.git
+cp -a .temp_repo/. ./
+rm -rf .temp_repo
 
-if conda info --envs | grep -q "^$ENV_NAME "; then
-    echo "Environment already exists. Updating just in case..."
-    conda env update -f environment.yml --prune
-else
-    echo "Creating environment from environment.yml..."
+echo "✅ Repository files moved into the current directory."
+
+echo "📦 2. Building Conda Environment from environment.yml..."
+if [ -f "environment.yml" ]; then
     conda env create -f environment.yml
+    echo "✅ Conda environment 'gnr_project_env' created successfully!"
+else
+    echo "❌ Error: environment.yml not found."
+    exit 1
 fi
 
-# ==============================================================================
-# 3. FINAL VERIFICATION
-# ==============================================================================
-echo "[3/3] Verifying Setup & CUDA availability..."
-conda activate "$ENV_NAME"
+echo "🧠 3. Downloading LLaVA Model directly via Conda Environment..."
+conda run -n gnr_project_env pip install huggingface_hub -q
 
-python -c "
-import torch
-import cv2
+# Run Python directly from bash (No 'cat' or temporary files needed!)
+conda run -n gnr_project_env python -c "
 import os
+from huggingface_hub import snapshot_download
 
-print(f'PyTorch Version: {torch.__version__}')
-print(f'OpenCV Version: {cv2.__version__}')
+MODEL_ID = 'llava-hf/llava-v1.6-mistral-7b-hf'
+SAVE_DIR = './llava-v1.6-mistral-offline'
 
-if not os.path.exists('./llava-1.6-mistral-offline'):
-    print('WARNING: Model folder ./llava-1.6-mistral-offline not found in current directory!')
-else:
-    print('Model folder found successfully.')
+os.makedirs(SAVE_DIR, exist_ok=True)
+print('Starting download for ' + MODEL_ID + '... This may take a while.')
 
-if torch.cuda.is_available():
-    print(f'CUDA is Available! GPU: {torch.cuda.get_device_name(0)}')
-else:
-    print('CRITICAL ERROR: CUDA is NOT available!')
-    exit(1)
+snapshot_download(
+    repo_id=MODEL_ID,
+    local_dir=SAVE_DIR,
+    local_dir_use_symlinks=False,
+    ignore_patterns=['*.bin', '*.h5', '*.msgpack']
+)
+print('\n✅ Download complete! Files saved to: ' + SAVE_DIR)
 "
 
-conda deactivate
-echo "======================================================================"
-echo "Setup Complete! System is ready for inference."
-echo "======================================================================"
-exit 0
+echo "========================================"
+echo "🎉 Setup Complete!"
+echo "========================================"

@@ -11,7 +11,7 @@ from transformers import LlavaNextProcessor, LlavaNextForConditionalGeneration, 
 
 # ── Config ──────────────────────────────────────────────────────────────────
 # 1. Model is read locally from your current directory
-MODEL_NAME     = "./llava-v1.6-mistral-7b-hf" # <-- Ensure this matches your local model folder name
+MODEL_NAME     = "./llava-v1.6-mistral-offline" 
 DEVICE         = "cuda"   
 
 # 2. OUTPUTS: Saved directly to the current working directory
@@ -308,11 +308,11 @@ def run_pipeline(image_path: str, csv_path: str, output_path: str):
 if __name__ == "__main__":
     # Use a single argument for the parent directory containing the data
     parser = argparse.ArgumentParser(description="Map stitching and VQA pipeline.")
-    parser.add_argument("--test_dir", type=str, required=True, help="Path to the directory containing test.csv and patches/")
+    parser.add_argument("--test_dir", type=str, required=True, help="Path to the directory containing test.csv and images/")
     args = parser.parse_args()
 
     csv_path = os.path.join(args.test_dir, "test.csv")
-    patch_dir = os.path.join(args.test_dir, "patches")
+    patch_dir = os.path.join(args.test_dir, "images")
 
     print(f"--- Starting Map Assembly from {patch_dir} ---")
     

@@ -10,7 +10,7 @@ dependencies:
   # Core ML/DL (Conda handles the CUDA mapping automatically here)
   - pytorch=2.10.0
   - torchvision=0.25.0
-  - pytorch-cuda=12.8
+  - pytorch-cuda=12.1
   
   # Data & Vision
   - pandas=2.3.3
